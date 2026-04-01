@@ -78,7 +78,7 @@ AI Human 교육 과정을 기반으로, 매일 학습한 내용과 복습 코드
 
 ## 📂 Structure
 
-```bash
+```text
 Python-to-ML/
 ├── day02/
 ├── day03/
@@ -97,6 +97,7 @@ Python-to-ML/
 ├── day16_dl/
 ├── day17_dl_cnn/
 └── README.md
+```
 
 ---
 
