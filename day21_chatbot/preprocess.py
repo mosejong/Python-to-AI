@@ -19,7 +19,7 @@ total_df = pd.concat([df1, df2, df3], axis=0, ignore_index=True)
 
 # 5. 빈칸(NaN) 날리기 (대화가 3단까지 안 간 경우 등)
 total_df = total_df.dropna(subset=['질문', '답변']).reset_index(drop=True)
-
+ 
 print(total_df.shape)
 
 # 6. 임베딩 작업 (시간이 좀 걸리니 인내심을 갖고!)

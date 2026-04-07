@@ -20,7 +20,7 @@ bot = EmotionChatbot('chat_data_premium.pkl')
 print("\n" + "="*50)
 print("       ✨ 갈문왕의 감성 케어 챗봇 엔진 가동 ✨")
 print("="*50)
-
+ 
 # 2. 페르소나 설정 (데이터셋의 '남성', '여성' 규격에 맞게!)
 print("\n비서: 대화 시작 전, 갈문왕님의 정보를 낱낱이 알려주소서.")
 user_gender = input("성별 (남성/여성): ").strip()

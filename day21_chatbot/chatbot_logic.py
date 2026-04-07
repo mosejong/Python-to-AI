@@ -19,7 +19,7 @@ class EmotionChatbot:
     def get_answer(self, user_input, user_gender, user_age):
         # [STEP 1] 사용자 질문을 벡터로 변환
         user_embedding = self.model.encode([user_input])
-        
+          
         # [STEP 2] 모든 질문 벡터와 코사인 유사도 계산
         # (1, 768)과 (N, 768)을 비교해서 (1, N) 형태의 결과가 나옴
         similarities = cosine_similarity(user_embedding, self.embedding_matrix)[0]
