@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Furniture Awards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fff9f5; --card-bg: #ffffff;
+            --primary-color: #ff8c42; --accent-color: #ff6b35;
+            --gold: #ffcc00; --silver: #c0c0c0; --bronze: #cd7f32;
+            --text-main: #334155; --text-sub: #64748b;
+        }
+
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; overflow-x: hidden; }
+        
+        /* 헤더: 상큼한 유리막 */
+        header { width: 100%; padding: 20px 0; background: rgba(255, 249, 245, 0.8); backdrop-filter: blur(10px); text-align: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,140,66,0.1); }
+        h1 { font-size: 1.8rem; margin: 0; color: var(--primary-color); }
+
+        main { width: 95%; max-width: 1000px; margin: 20px auto; display: flex; flex-direction: column; align-items: center; }
+
+        /* 업로드 섹션 */
+        .upload-box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(255,140,66,0.1); width: 100%; max-width: 500px; text-align: center; margin-bottom: 30px; border: 2px dashed rgba(255, 140, 66, 0.2); }
+        .custom-label { cursor: pointer; color: var(--primary-color); font-weight: 700; display: block; margin-bottom: 10px; }
+        button#searchBtn { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+        /* 🏆 시상대 레이아웃 (Top 3) */
+        .podium { display: none; align-items: flex-end; justify-content: center; gap: 10px; width: 100%; margin-top: 30px; margin-bottom: 40px; height: 350px; }
+        .winner { position: relative; background: white; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; overflow: hidden; transition: 0.5s; }
+        
+        /* 물음표 베일 ㅡㅡv */
+        .veil { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; z-index: 20; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .veil span { font-size: 3rem; font-weight: 800; color: white; }
+        .revealed .veil { transform: translateY(-100%); opacity: 0; }
+
+        .winner img { width: 100%; height: 140px; object-fit: cover; }
+        .rank-badge { position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; border-radius: 50%; color: white; font-weight: 800; line-height: 30px; z-index: 25; font-size: 0.8rem; }
+
+        .rank-1 { width: 40%; height: 300px; border: 3px solid var(--gold); z-index: 10; transform: translateY(-20px); }
+        .rank-1 .rank-badge { background: var(--gold); }
+        .rank-2 { width: 30%; height: 250px; border: 2px solid var(--silver); }
+        .rank-2 .rank-badge { background: var(--silver); }
+        .rank-3 { width: 30%; height: 230px; border: 2px solid var(--bronze); }
+        .rank-3 .rank-badge { background: var(--bronze); }
+
+        /* 공개 버튼 컨트롤 */
+        #revealControls { display: none; margin-bottom: 30px; text-align: center; }
+        .reveal-btn { padding: 10px 20px; margin: 5px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; }
+        .active-btn { background: var(--primary-color); color: white; }
+
+        /* 최근 기록 섹션 */
+        #historyArea { width: 100%; margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; }
+        .history-list { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; }
+        .history-card { min-width: 140px; background: white; padding: 10px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex-shrink: 0; text-align: center; }
+
+        #loader { display: none; margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<header><h1>🏆 Furniture Awards</h1></header>
+
+<main>
+    <div class="upload-box">
+        <label for="fileInput" class="custom-label">📂 사진 선택 (상금 준비!)</label>
+        <input type="file" id="fileInput" hidden>
+        <div id="fileName" style="font-size: 0.8rem; margin: 10px 0; color: var(--text-sub);">어떤 가구가 입상할까요?</div>
+        <button id="searchBtn" onclick="startAwards()">시상식 개최 🏁</button>
+        <div id="loader"></div>
+    </div>
+
+    <div id="revealControls">
+        <button id="btn3" class="reveal-btn active-btn" onclick="reveal(3)">🥉 3위 발표</button>
+        <button id="btn2" class="reveal-btn" onclick="reveal(2)" disabled>🥈 2위 발표</button>
+        <button id="btn1" class="reveal-btn" onclick="reveal(1)" disabled>🥇 1위 발표!</button>
+    </div>
+
+    <div class="podium" id="podiumArea">
+        <div class="winner rank-2" id="win2"></div>
+        <div class="winner rank-1" id="win1"></div>
+        <div class="winner rank-3" id="win3"></div>
+    </div>
+
+    <div id="historyArea"></div>
+</main>
+
+<script>
+    let currentMatches = [];
+
+    document.getElementById('fileInput').onchange = function() {
+        document.getElementById('fileName').innerText = this.files[0] ? this.files[0].name : "어떤 가구가 입상할까요?";
+    };
+
+    async function startAwards() {
+        const fileInput = document.getElementById('fileInput');
+        if(!fileInput.files[0]) return alert("선수를 입장시켜주세요! ㅡㅡ");
+
+        document.getElementById('loader').style.display = 'block';
+        
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const res = await fetch("/search?num_results=10", { method: "POST", body: formData });
+            const data = await res.json();
+            currentMatches = data.matches;
+
+            // 시상대 초기화 (물음표 세팅)
+            [2, 1, 3].forEach(rank => {
+                const item = currentMatches[rank-1];
+                const div = document.getElementById(`win${rank}`);
+                div.classList.remove('revealed');
+                div.innerHTML = `
+                    <div class="veil"><span>?</span></div>
+                    <div class="rank-badge">${rank}</div>
+                    <img src="${item.image_url}">
+                    <div style="padding:10px; font-weight:800; color:var(--primary-color); font-size:0.8rem;">${item.name}</div>
+                `;
+            });
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('podiumArea').style.display = 'flex';
+            document.getElementById('revealControls').style.display = 'block';
+
+            // 최근 기록 저장 (이미지를 Base64로 변환해서 저장)
+            const reader = new FileReader();
+            reader.onload = (e) => saveToHistory(e.target.result, currentMatches.slice(0, 3));
+            reader.readAsDataURL(fileInput.files[0]);
+
+        } catch (e) {
+            alert("서버 연결 실패 ㅡㅡ");
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
+
+    function reveal(rank) {
+        document.getElementById(`win${rank}`).classList.add('revealed');
+        document.getElementById(`btn${rank}`).classList.remove('active-btn');
+        document.getElementById(`btn${rank}`).disabled = true;
+        
+        if(rank === 3) document.getElementById('btn2').classList.add('active-btn'), document.getElementById('btn2').disabled = false;
+        if(rank === 2) document.getElementById('btn1').classList.add('active-btn'), document.getElementById('btn1').disabled = false;
+    }
+
+    // --- 히스토리 로직 ㅡㅡv ---
+    function saveToHistory(img, top3) {
+        let history = JSON.parse(localStorage.getItem('furnitureHistory') || '[]');
+        history.unshift({ date: new Date().toLocaleTimeString(), img: img, winner: top3[0].name });
+        if(history.length > 5) history.pop();
+        localStorage.setItem('furnitureHistory', JSON.stringify(history));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const area = document.getElementById('historyArea');
+        const history = JSON.parse(localStorage.getItem('furnitureHistory') || '[]');
+        if(history.length === 0) return;
+
+        area.innerHTML = `<h3 style="color:var(--text-sub); font-size:1rem;">📜 최근 5회 전적 기록</h3><div class="history-list"></div>`;
+        const list = area.querySelector('.history-list');
+        history.forEach(h => {
+            list.innerHTML += `
+                <div class="history-card">
+                    <img src="${h.img}" style="width:100%; height:60px; object-fit:cover; border-radius:8px;">
+                    <p style="font-size:0.7rem; margin:5px 0; font-weight:700;">${h.winner}</p>
+                    <span style="font-size:0.6rem; color:gray;">${h.date}</span>
+                </div>`;
+        });
+    }
+
+    window.onload = renderHistory;
+</script>
+</body>
+</html>

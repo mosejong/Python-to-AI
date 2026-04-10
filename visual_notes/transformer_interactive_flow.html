@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transformer Interactive Flow Plus</title>
+  <style>
+    :root {
+      --bg: #eef5ff;
+      --bg2: #f8fbff;
+      --panel: rgba(255, 255, 255, 0.78);
+      --panel-strong: rgba(255, 255, 255, 0.94);
+      --line: rgba(148, 163, 184, 0.22);
+      --text: #172033;
+      --muted: #5f6f8f;
+      --accent: #60a5fa;
+      --violet: #a78bfa;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --yellow: #facc15;
+      --shadow: 0 18px 42px rgba(110, 138, 184, .14);
+      --radius: 26px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(96,165,250,.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(167,139,250,.14), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(52,211,153,.10), transparent 26%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5ff 55%, #e9f1ff 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 42px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      padding: 34px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.86), rgba(240,247,255,.88));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.2);
+      background: rgba(96,165,250,.08);
+      color: #3c5f99;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: .96;
+      letter-spacing: -.045em;
+    }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6 45%, #10b981);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero p {
+      max-width: 860px;
+      color: var(--muted);
+      line-height: 1.85;
+      margin: 0;
+      font-size: 1.02rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: .2s ease;
+      box-shadow: 0 8px 18px rgba(96,165,250,.08);
+    }
+    .btn:hover { background: rgba(240,247,255,1); }
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(167,139,250,.16));
+      border-color: rgba(96,165,250,.24);
+      font-weight: 700;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px;
+      margin: 16px 0 20px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: .2s ease;
+    }
+    .nav a:hover { background: rgba(96,165,250,.08); color: var(--text); }
+
+    .section {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .section-title .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      box-shadow: 0 0 18px rgba(96,165,250,.25);
+    }
+    .desc { color: var(--muted); line-height: 1.8; margin-bottom: 18px; }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 20px;
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      padding: 10px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.26);
+      background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(167,139,250,.18));
+      color: #18345f;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(96,165,250,.12);
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .legend-item {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      padding: 14px;
+    }
+    .legend-item strong { display:block; margin-bottom:8px; font-size: 14px; }
+    .legend-item span { color: var(--muted); line-height: 1.7; font-size: 14px; }
+
+    .interactive-grid {
+      display: grid;
+      grid-template-columns: 1.18fr .82fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .flow-wrap {
+      position: relative;
+      padding: 16px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(247,250,255,.9));
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .flow-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .flow-line {
+      fill: none;
+      stroke: rgba(123, 154, 214, 0.16);
+      stroke-width: 3;
+      transition: stroke .2s ease, opacity .2s ease;
+    }
+    .flow-line.active {
+      stroke: url(#flowGradient);
+      opacity: 1;
+      filter: drop-shadow(0 0 8px rgba(96,165,250,.35));
+      stroke-dasharray: 8 8;
+      animation: dashMove 1.3s linear infinite;
+    }
+    @keyframes dashMove { to { stroke-dashoffset: -32; } }
+
+    .flow-stage-labels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .stage-pill {
+      text-align: center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      color: #47689f;
+      font-weight: 700;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tower {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.64);
+      padding: 16px;
+      min-height: 640px;
+      position: relative;
+    }
+
+    .tower h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    .step-block {
+      position: relative;
+      padding: 14px 14px 14px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .step-block:hover,
+    .step-block.active {
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(96,165,250,.22);
+      box-shadow: 0 12px 24px rgba(96,165,250,.10);
+      z-index: 2;
+    }
+    .step-block.dim { opacity: .34; }
+
+    .step-kicker {
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      color: rgba(54, 80, 128, .82);
+    }
+    .step-name { font-size: 15px; font-weight: 700; }
+    .step-sub { font-size: 13px; color: rgba(49, 71, 114, .82); margin-top: 6px; line-height: 1.65; }
+
+    .embed { background: rgba(96,165,250,.14); }
+    .pos { background: rgba(167,139,250,.14); }
+    .attn { background: rgba(251,146,60,.16); }
+    .norm { background: rgba(250,204,21,.12); }
+    .ffn { background: rgba(52,211,153,.14); }
+    .cross { background: rgba(244,114,182,.16); }
+    .out { background: rgba(34,197,94,.14); }
+
+    .arrow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #7f8fb0;
+      font-size: 18px;
+      height: 18px;
+      opacity: .9;
+    }
+
+    .detail-panel {
+      position: sticky;
+      top: 88px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      padding: 22px;
+      min-height: 420px;
+    }
+    .detail-badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.18);
+      color: #41669f;
+      font-size: 12px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .detail-panel h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+    .detail-panel p {
+      color: var(--muted);
+      line-height: 1.85;
+      font-size: 15px;
+      margin: 0 0 16px;
+    }
+    .detail-points {
+      display: grid;
+      gap: 10px;
+    }
+    .point {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      color: #203150;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .token-panel {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+    .token-title {
+      font-size: 13px;
+      color: #4d79bd;
+      margin-bottom: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .token-box {
+      display: grid;
+      gap: 10px;
+    }
+    .token-row {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+    .token-row strong { color: var(--text); }
+
+    .qkv-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .qkv-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+    .qkv-card h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .qkv-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+    .q { box-shadow: inset 0 0 0 1px rgba(96,165,250,.12); }
+    .k { box-shadow: inset 0 0 0 1px rgba(167,139,250,.12); }
+    .v { box-shadow: inset 0 0 0 1px rgba(52,211,153,.12); }
+
+    .example-flow {
+      display: grid;
+      gap: 12px;
+    }
+    .ex-step {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+    .ex-label {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #4d79bd;
+      font-weight: 700;
+    }
+    .ex-value {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .compare-card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+    .compare-card h4 { margin: 0 0 8px; font-size: 16px; }
+    .compare-card p { margin: 0; color: var(--muted); line-height: 1.75; font-size: 14px; }
+
+    .kbd {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      color: #1c2f52;
+    }
+
+    .focus-ring {
+      outline: 2px solid rgba(96,165,250,.45);
+      outline-offset: 2px;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 10px 0 0;
+    }
+
+    @media (max-width: 1024px) {
+      .top-grid, .interactive-grid, .compare-grid { grid-template-columns: 1fr; }
+      .detail-panel { position: static; }
+    }
+
+    @media (max-width: 720px) {
+      .shell { width: min(calc(100% - 16px), 1280px); }
+      .hero { padding: 24px; }
+      .section { padding: 18px; }
+      .legend, .qkv-grid { grid-template-columns: 1fr; }
+      .architecture { grid-template-columns: 1fr; }
+      .tower { min-height: auto; }
+      .ex-step { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Interactive Study Page · Light Tone</div>
+      <h1><span class="grad">Transformer</span><br>레이어 흐름이 눈에 들어오게</h1>
+      <p>
+        단순히 예쁜 설명 페이지가 아니라, <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg, rgba(96,165,250,.22), rgba(167,139,250,.18));border:1px solid rgba(96,165,250,.28);color:#16345f;font-weight:800;box-shadow:0 8px 18px rgba(96,165,250,.10);">입력 → 인코더 → 어텐션 → 디코더 → 출력</span> 흐름을 시각적으로 따라가며 이해하는 데 초점을 맞췄습니다. 각 레이어 위에 마우스를 올리면 설명이 바뀌고, 다른 레이어는 살짝 어두워져서 지금 어디를 보고 있는지 확실히 느껴지게 했습니다.
+      </p>
+      <div class="controls">
+        <button class="btn primary" id="autoplayBtn">▶ 자동 재생 시작</button>
+        <button class="btn" id="stopBtn">■ 정지</button>
+        <button class="btn" id="qkvBtn">QKV 포커스 보기</button>
+        <div class="status" id="playStatus">현재 모드: 수동 탐색</div>
+      </div>
+    </section>
+
+    <nav class="nav">
+      <a href="#overview">개요</a>
+      <a href="#interactive">레이어 흐름</a>
+      <a href="#qkv">QKV</a>
+      <a href="#example">번역 예시</a>
+      <a href="#compare">헷갈리는 포인트</a>
+    </nav>
+
+    <section id="overview" class="section">
+      <div class="top-grid">
+        <div>
+          <div class="section-title"><span class="dot"></span>이 페이지 핵심</div>
+          <p class="desc">
+            색만 예쁘게 칠한 설명용 페이지가 아니라, 실제로 <b style="color:#1c2f52;">학습 흐름을 따라가며 이해하는 경험</b>을 만들기 위해 설계했습니다. 레이어별 역할, 토큰 변화, 인코더와 디코더의 차이, QKV의 의미까지 한 화면 안에서 연결해서 볼 수 있습니다.
+          </p>
+          <div class="chips">
+            <div class="chip">입력</div>
+            <div class="chip">인코더</div>
+            <div class="chip">어텐션</div>
+            <div class="chip">디코더</div>
+            <div class="chip">출력</div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title"><span class="dot"></span>약어 빠르게</div>
+          <div class="legend">
+            <div class="legend-item"><strong>MHA</strong><span>Multi-Head Attention. 여러 관점에서 동시에 관계를 봅니다.</span></div>
+            <div class="legend-item"><strong>FFN</strong><span>Feed-Forward Network. Attention 다음에 표현을 더 깊게 바꿉니다.</span></div>
+            <div class="legend-item"><strong>PE</strong><span>Positional Encoding. 위치 정보를 더해 단어 순서를 알려줍니다.</span></div>
+            <div class="legend-item"><strong>Cross-Attention</strong><span>디코더가 인코더 출력을 참고하는 단계입니다.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="interactive" class="section">
+      <div class="section-title"><span class="dot"></span>레이어 흐름을 따라가기</div>
+      <p class="desc">레이어에 마우스를 올리거나 클릭하면 오른쪽 설명, 흐름선, 토큰 표현이 함께 바뀝니다.</p>
+
+      <div class="interactive-grid">
+        <div class="flow-wrap">
+          <svg class="flow-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60a5fa" />
+                <stop offset="50%" stop-color="#a78bfa" />
+                <stop offset="100%" stop-color="#34d399" />
+              </linearGradient>
+            </defs>
+            <path id="line-enc1" class="flow-line" d="M25 10 C25 16,25 16,25 22" />
+            <path id="line-enc2" class="flow-line" d="M25 24 C25 30,25 30,25 36" />
+            <path id="line-enc3" class="flow-line" d="M25 38 C25 44,25 44,25 50" />
+            <path id="line-enc4" class="flow-line" d="M25 52 C25 58,25 58,25 64" />
+            <path id="line-enc5" class="flow-line" d="M25 66 C25 72,25 72,25 78" />
+            <path id="line-dec1" class="flow-line" d="M75 10 C75 16,75 16,75 22" />
+            <path id="line-dec2" class="flow-line" d="M75 24 C75 30,75 30,75 36" />
+            <path id="line-dec3" class="flow-line" d="M75 38 C75 44,75 44,75 50" />
+            <path id="line-dec4" class="flow-line" d="M75 52 C75 58,75 58,75 64" />
+            <path id="line-dec5" class="flow-line" d="M75 66 C75 72,75 72,75 78" />
+            <path id="line-dec6" class="flow-line" d="M75 80 C75 86,75 86,75 92" />
+            <path id="line-cross" class="flow-line" d="M34 58 C45 58,55 50,66 50" />
+          </svg>
+
+          <div class="flow-stage-labels">
+            <div class="stage-pill">Encoder · 입력을 이해하는 쪽</div>
+            <div class="stage-pill">Decoder · 출력을 생성하는 쪽</div>
+          </div>
+
+          <div class="architecture">
+            <div class="tower">
+              <h3>Encoder</h3>
+              <div class="step-block embed active" data-key="enc_embed">
+                <div class="step-kicker">Step 01</div>
+                <div class="step-name">Input Embedding</div>
+                <div class="step-sub">입력 단어를 숫자 벡터로 변환</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block pos" data-key="enc_pos">
+                <div class="step-kicker">Step 02</div>
+                <div class="step-name">Positional Encoding</div>
+                <div class="step-sub">단어 순서 정보를 벡터에 추가</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block attn" data-key="enc_attn">
+                <div class="step-kicker">Step 03</div>
+                <div class="step-name">Self-Attention</div>
+                <div class="step-sub">각 단어가 다른 단어를 얼마나 참고할지 계산</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block norm" data-key="enc_norm1">
+                <div class="step-kicker">Step 04</div>
+                <div class="step-name">Add & Norm</div>
+                <div class="step-sub">원래 정보 보존 + 값 안정화</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block ffn" data-key="enc_ffn">
+                <div class="step-kicker">Step 05</div>
+                <div class="step-name">Feed-Forward Network</div>
+                <div class="step-sub">각 단어 표현을 더 깊게 변환</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block norm" data-key="enc_norm2">
+                <div class="step-kicker">Step 06</div>
+                <div class="step-name">Add & Norm</div>
+                <div class="step-sub">인코더 블록 출력 정리</div>
+              </div>
+            </div>
+
+            <div class="tower">
+              <h3>Decoder</h3>
+              <div class="step-block embed" data-key="dec_embed">
+                <div class="step-kicker">Step 07</div>
+                <div class="step-name">Output Embedding</div>
+                <div class="step-sub">이전 출력 토큰을 벡터로 변환</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block pos" data-key="dec_pos">
+                <div class="step-kicker">Step 08</div>
+                <div class="step-name">Positional Encoding</div>
+                <div class="step-sub">출력 토큰의 위치 정보 추가</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block cross" data-key="dec_masked">
+                <div class="step-kicker">Step 09</div>
+                <div class="step-name">Masked Self-Attention</div>
+                <div class="step-sub">미래 단어를 못 보게 가리고 현재까지의 출력만 참조</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block norm" data-key="dec_norm1">
+                <div class="step-kicker">Step 10</div>
+                <div class="step-name">Add & Norm</div>
+                <div class="step-sub">디코더 내부 정보 안정화</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block attn" data-key="dec_cross">
+                <div class="step-kicker">Step 11</div>
+                <div class="step-name">Cross-Attention</div>
+                <div class="step-sub">인코더 출력을 참고해 지금 필요한 입력 위치를 찾음</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block norm" data-key="dec_norm2">
+                <div class="step-kicker">Step 12</div>
+                <div class="step-name">Add & Norm</div>
+                <div class="step-sub">참고한 정보를 정리하고 연결</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block ffn" data-key="dec_ffn">
+                <div class="step-kicker">Step 13</div>
+                <div class="step-name">Feed-Forward Network</div>
+                <div class="step-sub">출력 단어 표현을 더 다듬음</div>
+              </div>
+              <div class="arrow">↓</div>
+              <div class="step-block out" data-key="dec_out">
+                <div class="step-kicker">Step 14</div>
+                <div class="step-name">Linear + Softmax</div>
+                <div class="step-sub">다음 단어 확률 계산 후 가장 높은 단어 선택</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="detail-panel">
+          <div class="detail-badge">현재 보고 있는 레이어</div>
+          <h3 id="detailTitle">Input Embedding</h3>
+          <p id="detailBody">입력 문장의 각 단어를 벡터로 바꾸는 시작 단계입니다. 사람이 쓰는 단어를 모델이 처리할 수 있는 수치 표현으로 바꿉니다.</p>
+          <div class="detail-points" id="detailPoints">
+            <div class="point">입력: 토큰 인덱스</div>
+            <div class="point">출력: 임베딩 벡터</div>
+            <div class="point">느낌: 단어를 좌표로 바꾸는 단계</div>
+          </div>
+          <div class="token-panel">
+            <div class="token-title">현재 단계에서 토큰이 어떻게 보이는지</div>
+            <div class="token-box" id="tokenBox">
+              <div class="token-row"><strong>예시 입력:</strong> [나는, 밥을, 먹었다]</div>
+              <div class="token-row"><strong>현재 표현:</strong> 각 단어를 임베딩 벡터로 변환하는 단계</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="qkv" class="section">
+      <div class="section-title"><span class="dot"></span>Q · K · V 시각화</div>
+      <p class="desc">Attention에서 가장 많이 헷갈리는 Q, K, V를 역할 중심으로 바로 이해할 수 있게 분리했습니다.</p>
+      <div class="qkv-grid">
+        <div class="qkv-card q">
+          <h4>Q · Query</h4>
+          <p>지금 내가 무엇을 찾고 싶은지를 나타냅니다. 디코더 기준으로 보면 “지금 만들 단어와 관련된 정보가 뭐지?”라는 질문에 가까워요.</p>
+        </div>
+        <div class="qkv-card k">
+          <h4>K · Key</h4>
+          <p>각 단어가 가진 단서입니다. Query가 이 Key들과 비교되면서 어떤 단어를 얼마나 참고할지 점수가 계산됩니다.</p>
+        </div>
+        <div class="qkv-card v">
+          <h4>V · Value</h4>
+          <p>실제로 가져올 내용입니다. Attention score가 높게 나온 단어일수록 해당 Value 정보가 더 많이 반영됩니다.</p>
+        </div>
+      </div>
+      <div class="example-flow" style="margin-top:14px;">
+        <div class="ex-step">
+          <div class="ex-label">쉽게 말하면</div>
+          <div class="ex-value"><span class="kbd">Q = 지금 찾는 질문</span> / <span class="kbd">K = 비교할 표지판</span> / <span class="kbd">V = 실제 가져올 내용</span></div>
+        </div>
+        <div class="ex-step">
+          <div class="ex-label">번역 예시</div>
+          <div class="ex-value">디코더가 <span class="kbd">I</span>를 만들 때 Q는 “주어 정보 뭐지?”를 찾고, 인코더 쪽 Key 중 <span class="kbd">나는</span>와 잘 맞는 곳의 Value를 더 많이 가져옵니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="example" class="section">
+      <div class="section-title"><span class="dot"></span>번역 예시로 보면 더 쉬움</div>
+      <p class="desc"><span class="kbd">나는 밥을 먹었다 → I ate rice</span> 기준으로 흐름을 단순화해서 정리했습니다.</p>
+      <div class="example-flow">
+        <div class="ex-step">
+          <div class="ex-label">입력</div>
+          <div class="ex-value">문장을 토큰화해서 <span class="kbd">[나는, 밥을, 먹었다]</span>로 나눕니다.</div>
+        </div>
+        <div class="ex-step">
+          <div class="ex-label">인코더</div>
+          <div class="ex-value">각 단어가 서로 어떤 관계인지 계산해서 문맥이 담긴 표현으로 바꿉니다.</div>
+        </div>
+        <div class="ex-step">
+          <div class="ex-label">디코더 시작</div>
+          <div class="ex-value"><span class="kbd">[START]</span> 토큰부터 시작해서 첫 단어를 예측합니다.</div>
+        </div>
+        <div class="ex-step">
+          <div class="ex-label">Cross-Attention</div>
+          <div class="ex-value">예를 들어 <span class="kbd">I</span>를 만들 때 입력의 <span class="kbd">나는</span> 쪽 정보에 집중합니다.</div>
+        </div>
+        <div class="ex-step">
+          <div class="ex-label">출력 생성</div>
+          <div class="ex-value"><span class="kbd">I → ate → rice → [END]</span> 순으로 한 단어씩 생성합니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare" class="section">
+      <div class="section-title"><span class="dot"></span>딱 헷갈리는 포인트만</div>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4>왜 RNN보다 빠를까</h4>
+          <p>RNN은 순서대로 읽어야 하지만 Transformer는 단어들을 동시에 보고 계산할 수 있어서 병렬 처리에 훨씬 유리합니다.</p>
+        </div>
+        <div class="compare-card">
+          <h4>왜 Positional Encoding이 필요할까</h4>
+          <p>Transformer는 순차적으로 읽지 않기 때문에, 단어 위치를 따로 알려주지 않으면 순서를 구분할 수 없습니다.</p>
+        </div>
+        <div class="compare-card">
+          <h4>Cross-Attention이 왜 중요할까</h4>
+          <p>디코더가 현재 만들고 있는 출력 단어와 관련된 입력 부분을 정확히 참고하게 해주는 핵심 연결 고리입니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Transformer interactive flow · autoplay, QKV, token state, animated path</div>
+  </div>
+
+  <script>
+    const details = {
+      enc_embed: {
+        title: 'Input Embedding',
+        body: '입력 문장의 각 단어를 벡터로 바꾸는 시작 단계입니다. 사람이 쓰는 단어를 모델이 처리할 수 있는 수치 표현으로 바꿉니다.',
+        points: ['입력: 토큰 인덱스', '출력: 임베딩 벡터', '느낌: 단어를 좌표로 바꾸는 단계']
+      },
+      enc_pos: {
+        title: 'Positional Encoding',
+        body: 'Transformer는 단어를 동시에 보기 때문에 순서를 자동으로 알지 못합니다. 그래서 각 위치마다 다른 패턴을 더해 단어 순서를 알려줍니다.',
+        points: ['입력: 임베딩 벡터', '출력: 위치 정보가 더해진 벡터', '느낌: 이 단어가 몇 번째인지 도장 찍기']
+      },
+      enc_attn: {
+        title: 'Self-Attention',
+        body: '각 단어가 문장 안의 다른 모든 단어를 얼마나 참고할지 계산합니다. 문장 전체를 한꺼번에 보면서 관계를 잡는 Transformer의 핵심입니다.',
+        points: ['Q, K, V를 사용해 관련도 계산', '먼 단어도 직접 연결 가능', '느낌: 문장 안에서 누구를 봐야 하는지 정하는 단계']
+      },
+      enc_norm1: {
+        title: 'Add & Norm',
+        body: 'Self-Attention 결과에 원래 입력을 더해서 정보 손실을 줄이고, 정규화를 통해 값 분포를 안정화합니다.',
+        points: ['원래 정보 보존', '학습 안정화', '느낌: 원본도 챙기면서 정리하기']
+      },
+      enc_ffn: {
+        title: 'Feed-Forward Network',
+        body: 'Attention으로 관계를 파악한 뒤, 각 단어 표현을 더 깊고 풍부하게 변환하는 단계입니다.',
+        points: ['단어별 독립 처리', '표현력 강화', '느낌: 정리된 정보를 더 깊게 다듬기']
+      },
+      enc_norm2: {
+        title: 'Encoder Output Normalize',
+        body: '인코더 블록의 마지막 정리 단계입니다. 이 출력을 다음 인코더 층이나 디코더가 참고합니다.',
+        points: ['인코더 블록 완료', '출력은 디코더의 참조 대상', '느낌: 이해한 문장을 정리해서 넘기는 단계']
+      },
+      dec_embed: {
+        title: 'Output Embedding',
+        body: '디코더는 이전까지 생성한 출력 토큰을 다시 벡터로 바꿔 다음 단어 예측에 사용합니다.',
+        points: ['입력: 이전 출력 토큰', '출력: 디코더용 임베딩', '느낌: 지금까지 만든 말을 다시 읽는 단계']
+      },
+      dec_pos: {
+        title: 'Decoder Positional Encoding',
+        body: '출력 토큰도 순서가 중요하므로, 디코더에서도 위치 정보를 더해줍니다.',
+        points: ['출력 토큰 위치 반영', '생성 순서 유지', '느낌: 출력 문장에서도 순서 감각 추가']
+      },
+      dec_masked: {
+        title: 'Masked Self-Attention',
+        body: '디코더는 미래 단어를 미리 보면 안 됩니다. 그래서 현재 시점 이후 단어는 가리고, 지금까지 만든 출력만 참고합니다.',
+        points: ['미래 토큰 차단', 'Auto-regressive 생성', '느낌: 앞부분만 보고 다음 말을 이어가기']
+      },
+      dec_norm1: {
+        title: 'Decoder Add & Norm',
+        body: '디코더 내부에서도 원래 정보 보존과 정규화를 반복해 학습을 안정화합니다.',
+        points: ['잔차 연결', '값 안정화', '느낌: 중간 결과 정리']
+      },
+      dec_cross: {
+        title: 'Cross-Attention',
+        body: '디코더가 인코더 출력을 참고하는 단계입니다. 지금 만들고 있는 출력이 입력 문장의 어느 부분과 연결되는지 찾습니다.',
+        points: ['디코더 ↔ 인코더 연결', '번역에서 핵심', '느낌: 입력 문장에서 답을 찾는 단계']
+      },
+      dec_norm2: {
+        title: 'Cross Result Normalize',
+        body: '인코더에서 참고한 정보를 현재 디코더 상태와 부드럽게 합쳐줍니다.',
+        points: ['정보 결합', '안정화', '느낌: 참고한 내용을 내 문장에 녹여 넣기']
+      },
+      dec_ffn: {
+        title: 'Decoder Feed-Forward Network',
+        body: '출력 단어 표현을 더 다듬어서 최종 예측 직전 상태로 만들어줍니다.',
+        points: ['출력 표현 강화', '최종 예측 준비', '느낌: 말하기 직전 문장 다듬기']
+      },
+      dec_out: {
+        title: 'Linear + Softmax',
+        body: '현재 벡터를 단어장 전체 확률로 바꿔서, 다음에 나올 가능성이 가장 높은 단어를 고릅니다.',
+        points: ['출력: 단어 확률 분포', '최종 단어 선택', '느낌: 답안지에서 가장 유력한 단어 찍기']
+      }
+    };
+
+    const tokenStates = {
+      enc_embed: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 각 단어를 임베딩 벡터로 변환하는 단계'],
+      enc_pos: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 각 단어에 위치 정보(pos0, pos1, pos2) 추가'],
+      enc_attn: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 각 단어가 다른 단어를 얼마나 참고할지 계산'],
+      enc_norm1: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 원래 정보 + attention 결과를 정리'],
+      enc_ffn: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 각 단어 벡터를 더 풍부하게 변환'],
+      enc_norm2: ['예시 입력: [나는, 밥을, 먹었다]', '현재 표현: 인코더 최종 출력으로 정리 완료'],
+      dec_embed: ['예시 출력 입력: [START]', '현재 표현: 이전까지 생성한 출력 토큰을 벡터로 변환'],
+      dec_pos: ['예시 출력 입력: [START]', '현재 표현: 출력 토큰에도 위치 정보 추가'],
+      dec_masked: ['예시 출력 입력: [START, I]', '현재 표현: 미래 단어는 가리고 지금까지의 출력만 참고'],
+      dec_norm1: ['예시 출력 입력: [START, I]', '현재 표현: 디코더 내부 상태 안정화'],
+      dec_cross: ['예시 출력 입력: [START, I]', '현재 표현: 인코더에서 “나는” 관련 정보 참고'],
+      dec_norm2: ['예시 출력 입력: [START, I]', '현재 표현: 참고한 입력 정보를 현재 상태와 결합'],
+      dec_ffn: ['예시 출력 입력: [START, I]', '현재 표현: 다음 단어를 말하기 직전 상태로 다듬기'],
+      dec_out: ['예시 출력 입력: [START, I]', '현재 표현: ate / rice 같은 다음 단어 확률 계산']
+    };
+
+    const lineMap = {
+      enc_embed: ['line-enc1'],
+      enc_pos: ['line-enc1','line-enc2'],
+      enc_attn: ['line-enc1','line-enc2','line-enc3'],
+      enc_norm1: ['line-enc1','line-enc2','line-enc3'],
+      enc_ffn: ['line-enc1','line-enc2','line-enc3','line-enc4'],
+      enc_norm2: ['line-enc1','line-enc2','line-enc3','line-enc4','line-enc5'],
+      dec_embed: ['line-dec1'],
+      dec_pos: ['line-dec1','line-dec2'],
+      dec_masked: ['line-dec1','line-dec2','line-dec3'],
+      dec_norm1: ['line-dec1','line-dec2','line-dec3'],
+      dec_cross: ['line-dec1','line-dec2','line-dec3','line-dec4','line-cross'],
+      dec_norm2: ['line-dec1','line-dec2','line-dec3','line-dec4','line-cross'],
+      dec_ffn: ['line-dec1','line-dec2','line-dec3','line-dec4','line-cross','line-dec5'],
+      dec_out: ['line-dec1','line-dec2','line-dec3','line-dec4','line-cross','line-dec5','line-dec6']
+    };
+
+    const orderedKeys = ['enc_embed','enc_pos','enc_attn','enc_norm1','enc_ffn','enc_norm2','dec_embed','dec_pos','dec_masked','dec_norm1','dec_cross','dec_norm2','dec_ffn','dec_out'];
+
+    const blocks = document.querySelectorAll('.step-block');
+    const title = document.getElementById('detailTitle');
+    const body = document.getElementById('detailBody');
+    const points = document.getElementById('detailPoints');
+    const tokenBox = document.getElementById('tokenBox');
+    const autoplayBtn = document.getElementById('autoplayBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const qkvBtn = document.getElementById('qkvBtn');
+    const playStatus = document.getElementById('playStatus');
+
+    let autoplayTimer = null;
+    let autoplayIndex = 0;
+
+    function setActive(key) {
+      blocks.forEach(b => {
+        const active = b.dataset.key === key;
+        b.classList.toggle('active', active);
+        b.classList.toggle('dim', !active);
+      });
+
+      const data = details[key];
+      title.textContent = data.title;
+      body.textContent = data.body;
+      points.innerHTML = data.points.map(p => `<div class="point">${p}</div>`).join('');
+
+      const state = tokenStates[key] || ['예시 입력: 없음', '현재 표현: 없음'];
+      tokenBox.innerHTML = `
+        <div class="token-row"><strong>${state[0].split(':')[0]}:</strong> ${state[0].split(':').slice(1).join(':').trim()}</div>
+        <div class="token-row"><strong>${state[1].split(':')[0]}:</strong> ${state[1].split(':').slice(1).join(':').trim()}</div>
+      `;
+
+      document.querySelectorAll('.flow-line').forEach(line => line.classList.remove('active'));
+      (lineMap[key] || []).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+      });
+    }
+
+    function startAutoplay() {
+      clearInterval(autoplayTimer);
+      playStatus.textContent = '현재 모드: 자동 재생 중';
+      autoplayBtn.textContent = '⏸ 자동 재생 중';
+      setActive(orderedKeys[autoplayIndex]);
+      autoplayTimer = setInterval(() => {
+        autoplayIndex = (autoplayIndex + 1) % orderedKeys.length;
+        setActive(orderedKeys[autoplayIndex]);
+      }, 1700);
+    }
+
+    function stopAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+      autoplayBtn.textContent = '▶ 자동 재생 시작';
+      playStatus.textContent = '현재 모드: 수동 탐색';
+    }
+
+    blocks.forEach(block => {
+      block.addEventListener('mouseenter', () => setActive(block.dataset.key));
+      block.addEventListener('click', () => setActive(block.dataset.key));
+    });
+
+    autoplayBtn.addEventListener('click', () => {
+      if (autoplayTimer) stopAutoplay();
+      else startAutoplay();
+    });
+
+    stopBtn.addEventListener('click', stopAutoplay);
+
+    qkvBtn.addEventListener('click', () => {
+      document.getElementById('qkv').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      qkvBtn.classList.add('focus-ring');
+      setTimeout(() => qkvBtn.classList.remove('focus-ring'), 1200);
+    });
+
+    setActive('enc_embed');
+  </script>
+</body>
+</html>

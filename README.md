@@ -1,14 +1,14 @@
 # Python-to-AI
 
-Python 기초부터 머신러닝, 딥러닝, NLP, API 활용 프로젝트까지 학습하고 기록한 저장소입니다.  
-AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 실습 프로젝트를 함께 정리하고 있습니다.
+Python 기초부터 머신러닝, 딥러닝, NLP, 벡터 검색, API/풀스택 프로젝트까지 학습하고 기록한 저장소입니다.  
+AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 실습 프로젝트, 시각화 자료를 함께 정리하고 있습니다.
 
 ---
 
 ## 📌 About
 
 이 저장소는 단순한 코드 모음이 아니라  
-**Python → ML → DL → NLP → AI 프로젝트** 로 이어지는 학습 흐름을 기록하는 공간입니다.
+**Python → ML → DL → NLP → Vector Search → AI 프로젝트** 로 이어지는 학습 흐름을 기록하는 공간입니다.
 
 - 직접 작성한 코드 중심
 - 복습 기반 학습 기록
@@ -25,6 +25,10 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 
 - Scikit-learn
 - TensorFlow / Keras
 - PyTorch
+- Transformers
+- ChromaDB
+- FastAPI
+- Streamlit
 - Git / GitHub
 
 ---
@@ -34,7 +38,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 
 - Python 기반 문제 해결력 강화
 - 머신러닝 / 딥러닝 핵심 개념 정리
 - NLP와 챗봇 구현 실습
-- API 활용 및 데이터 시각화 경험 확장
+- 벡터 검색, FastAPI, 풀스택 프로젝트 경험 확장
 
 ---
 
@@ -51,6 +55,10 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 
 - **[Day23 Attention NMT Project](./day23_attention_nmt/)**
   - Seq2Seq + Attention 기반 번역 모델 구현
   - 전처리 최적화로 학습 효율을 개선하며 성능 향상 과정을 경험
+
+- **[Day24 Furniture Awards AI](./day24_Chroma_Fullstack/)**
+  - DINOv2 + ChromaDB 기반 가구 이미지 유사도 검색 프로젝트
+  - Streamlit 프로토타입과 FastAPI + HTML/JS 풀스택 구조를 함께 구현
 
 ---
 
@@ -90,6 +98,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 
 | Day21 | NLP 기초 / 텍스트 전처리 / 챗봇 구현 |
 | Day22 | NLP 심화 / Naive Bayes / Cosine Similarity |
 | Day23 | Seq2Seq + Attention 번역 모델 구현 / 성능 최적화 |
+| Day24 | DINOv2 / ChromaDB / Streamlit → FastAPI 풀스택 프로젝트 |
 
 ---
 
@@ -119,6 +128,7 @@ Python-to-AI/
 ├── day21_chatbot/
 ├── day22_nlp_advance/
 ├── day23_attention_nmt/
+├── day24_Chroma_Fullstack/
 ├── visual_notes/
 │   ├── transformer_interactive_flow.html
 │   └── cnn_rnn_lstm_gru_interactive_flow.html
@@ -129,19 +139,20 @@ Python-to-AI/
 
 ## 🔥 Recent Update
 
-### Day23: Attention 기반 NMT 구현 및 전처리 최적화
+### Day24: DINOv2 + ChromaDB 기반 이미지 유사도 검색 서비스 구현
 
-자연어 처리의 전통적 임베딩 기법부터 Attention 메커니즘까지 연결해 학습하고,  
-Seq2Seq + Attention 기반 번역 모델을 직접 구현하며 성능 개선 과정을 경험했습니다.
+가구 이미지를 업로드하면 DINOv2로 임베딩을 추출하고,  
+ChromaDB에서 유사한 이미지를 검색한 뒤 시상식 형태의 UI로 결과를 보여주는 프로젝트를 구현했습니다.
 
 #### 핵심 정리
-- BoW, TF-IDF, Word2Vec, FastText, Subword Tokenization 개념 정리
-- Seq2Seq의 Context Vector 한계와 Attention의 필요성 이해
-- Query, Key, Value 및 Scaled Dot-Product Attention 구조 학습
+- DINOv2 기반 이미지 임베딩 추출
+- ChromaDB를 활용한 벡터 유사도 검색
+- Streamlit 프로토타입 구현 후 FastAPI + HTML/JS 구조로 확장
+- LocalStorage 기반 최근 검색 기록 저장 기능 구현
 
 #### Troubleshooting
-- `lookup_indices` 적용으로 전처리 속도를 **7분 → 7초**로 개선
-- `torchtext` 버전 이슈를 특수 토큰 수동 처리 방식으로 해결
+- `127.0.0.1` 환경의 한계로 모바일 접속이 불가능했지만, `0.0.0.0` 호스트 설정으로 해결
+- 기능 증가에 따라 복잡해진 UI/상태 제어 로직을 정리하며 가독성 개선
 
 ---
 

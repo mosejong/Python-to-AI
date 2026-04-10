@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sequence & Vision Review Visual</title>
+  <style>
+    :root {
+      --bg: #eef5ff;
+      --panel: rgba(255, 255, 255, 0.82);
+      --panel-strong: rgba(255, 255, 255, 0.95);
+      --line: rgba(148, 163, 184, 0.22);
+      --text: #172033;
+      --muted: #5f6f8f;
+      --blue: #60a5fa;
+      --violet: #8b5cf6;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --yellow: #facc15;
+      --shadow: 0 18px 42px rgba(110, 138, 184, .14);
+      --radius: 26px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(96,165,250,.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(52,211,153,.10), transparent 26%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5ff 55%, #e9f1ff 100%);
+      min-height: 100vh;
+    }
+    .shell { width: min(1280px, calc(100% - 28px)); margin: 0 auto; padding: 24px 0 42px; }
+    .hero {
+      border-radius: 32px; padding: 34px; border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(240,247,255,.92));
+      box-shadow: var(--shadow);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.2); background: rgba(96,165,250,.08); color: #3c5f99;
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 4.6rem); line-height: .96; letter-spacing: -.045em; }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6 50%, #10b981);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p { max-width: 920px; color: var(--muted); line-height: 1.85; margin: 0; font-size: 1.02rem; }
+    .tabs {
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 20px; padding: 12px;
+      border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.78);
+      box-shadow: 0 10px 24px rgba(0,0,0,.06); position: sticky; top: 12px; z-index: 20; backdrop-filter: blur(14px);
+    }
+    .tab {
+      padding: 10px 14px; border-radius: 12px; border: 1px solid transparent; background: transparent;
+      color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 700; transition: .2s ease;
+    }
+    .tab:hover { background: rgba(96,165,250,.08); color: var(--text); }
+    .tab.active {
+      color: #18345f; background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(139,92,246,.14));
+      border-color: rgba(96,165,250,.24); box-shadow: 0 8px 18px rgba(96,165,250,.10);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .section {
+      border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius);
+      padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 1.18rem; font-weight: 700; letter-spacing: -.02em;
+    }
+    .section-title .dot {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--violet)); box-shadow: 0 0 18px rgba(96,165,250,.25);
+    }
+    .desc { color: var(--muted); line-height: 1.8; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 20px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      padding: 10px 13px; border-radius: 999px; border: 1px solid rgba(96,165,250,.26);
+      background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(167,139,250,.18));
+      color: #18345f; font-size: 13px; font-weight: 800; box-shadow: 0 8px 18px rgba(96,165,250,.12);
+    }
+    .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .mini { border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 14px; }
+    .mini strong { display:block; margin-bottom: 8px; font-size: 14px; }
+    .mini span { color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .interactive-grid { display: grid; grid-template-columns: 1.18fr .82fr; gap: 20px; align-items: start; }
+    .flow-wrap {
+      position: relative; padding: 16px; border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(247,250,255,.9)); border: 1px solid var(--line); overflow: hidden;
+    }
+    .stack { position: relative; z-index: 1; }
+    .step-block {
+      position: relative; padding: 14px 14px 14px 16px; border-radius: 16px; border: 1px solid transparent;
+      margin-bottom: 10px; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .step-block:hover, .step-block.active { transform: translateY(-2px) scale(1.01); border-color: rgba(96,165,250,.22); box-shadow: 0 12px 24px rgba(96,165,250,.10); z-index: 2; }
+    .step-block.dim { opacity: .34; }
+    .step-kicker { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; color: rgba(54, 80, 128, .82); }
+    .step-name { font-size: 15px; font-weight: 700; }
+    .step-sub { font-size: 13px; color: rgba(49, 71, 114, .82); margin-top: 6px; line-height: 1.65; }
+    .conv { background: rgba(96,165,250,.14); }
+    .relu { background: rgba(250,204,21,.12); }
+    .pool { background: rgba(52,211,153,.14); }
+    .flatten { background: rgba(244,114,182,.14); }
+    .dense { background: rgba(251,146,60,.16); }
+    .softmax { background: rgba(34,197,94,.14); }
+    .embed { background: rgba(96,165,250,.14); }
+    .rnn { background: rgba(139,92,246,.14); }
+    .hidden { background: rgba(251,146,60,.16); }
+    .out { background: rgba(34,197,94,.14); }
+    .arrow { display: flex; justify-content: center; align-items: center; color: #7f8fb0; font-size: 18px; height: 18px; opacity: .9; }
+    .detail-panel {
+      position: sticky; top: 88px; border-radius: 24px; border: 1px solid var(--line);
+      background: var(--panel-strong); padding: 22px; min-height: 420px;
+    }
+    .detail-badge {
+      display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.18); color: #41669f; font-size: 12px; margin-bottom: 12px; font-weight: 700;
+    }
+    .detail-panel h3 { margin: 0 0 10px; font-size: 24px; letter-spacing: -.03em; }
+    .detail-panel p { color: var(--muted); line-height: 1.85; font-size: 15px; margin: 0 0 16px; }
+    .detail-points { display: grid; gap: 10px; }
+    .point { padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.78); color: #203150; font-size: 14px; line-height: 1.7; }
+    .token-panel { margin-top: 16px; padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.78); }
+    .token-title { font-size: 13px; color: #4d79bd; margin-bottom: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .token-box { display: grid; gap: 10px; }
+    .token-row { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.92); color: var(--muted); font-size: 14px; line-height: 1.75; }
+    .token-row strong { color: var(--text); }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .btn {
+      appearance: none; border: 1px solid var(--line); background: rgba(255,255,255,.92); color: var(--text);
+      padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 14px; transition: .2s ease; box-shadow: 0 8px 18px rgba(96,165,250,.08);
+    }
+    .btn:hover { background: rgba(240,247,255,1); }
+    .btn.primary { background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(167,139,250,.16)); border-color: rgba(96,165,250,.24); font-weight: 700; }
+    .status { display: inline-flex; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.86); color: var(--muted); font-size: 13px; }
+    .example-flow { display: grid; gap: 12px; }
+    .ex-step { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.78); }
+    .ex-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #4d79bd; font-weight: 700; }
+    .ex-value { color: var(--muted); line-height: 1.8; font-size: 14px; }
+    .kbd { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.92); color: #1c2f52; }
+    .scan-wrap { border-radius: 22px; border: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 16px; margin-top: 16px; }
+    .scan-title { font-size: 13px; color: #4d79bd; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .image-grid { position: relative; width: 260px; height: 260px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 0 auto; }
+    .pixel { background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(139,92,246,.14)); border-radius: 8px; }
+    .pixel.hot { background: linear-gradient(135deg, rgba(251,146,60,.38), rgba(244,114,182,.28)); }
+    .filter-box {
+      position: absolute; width: 84px; height: 84px; border: 3px solid #fb923c; border-radius: 18px;
+      background: rgba(251,146,60,.08); box-shadow: 0 0 0 999px rgba(255,255,255,.22) inset; transition: all .35s ease;
+      pointer-events: none;
+    }
+    .timestep-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+    .timestep { border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 16px; transition: .2s ease; opacity: .52; }
+    .timestep.active { opacity: 1; box-shadow: 0 12px 24px rgba(96,165,250,.10); border-color: rgba(96,165,250,.24); transform: translateY(-2px); }
+    .timestep h4 { margin: 0 0 8px; font-size: 16px; }
+    .timestep p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0 0; }
+    @media (max-width: 1024px) { .grid, .interactive-grid { grid-template-columns: 1fr; } .detail-panel { position: static; } }
+    @media (max-width: 720px) {
+      .shell { width: min(calc(100% - 16px), 1280px); } .hero { padding: 24px; } .section { padding: 18px; }
+      .mini-grid, .timestep-wrap { grid-template-columns: 1fr; } .ex-step { grid-template-columns: 1fr; }
+      .image-grid { width: 210px; height: 210px; } .filter-box { width: 68px; height: 68px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">CNN · RNN · LSTM · GRU Review Visual</div>
+      <h1><span class="grad">지나간 딥러닝 파트</span><br>복습 필수 버전으로</h1>
+      <p>
+        CNN은 필터가 이미지를 어떻게 훑는지, RNN은 시간축을 따라 정보가 어떻게 이어지는지, 그리고 LSTM/GRU는 RNN의 기억 문제를 어떻게 보완하는지 한 파일 안에서 복습할 수 있게 정리했습니다.
+      </p>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="cnn">CNN 복습</button>
+      <button class="tab" data-tab="rnn">RNN 복습</button>
+      <button class="tab" data-tab="lstm">LSTM/GRU 복습</button>
+    </div>
+
+    <section id="panel-cnn" class="panel active">
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>CNN 핵심 흐름</div>
+            <p class="desc">CNN은 이미지를 필터가 여러 번 훑으면서 중요한 특징을 뽑고, 점점 압축해 최종 분류로 이어집니다.</p>
+            <div class="chips">
+              <div class="chip">이미지 입력</div>
+              <div class="chip">Convolution</div>
+              <div class="chip">ReLU</div>
+              <div class="chip">Pooling</div>
+              <div class="chip">분류 출력</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title"><span class="dot"></span>한 줄 요약</div>
+            <div class="mini-grid">
+              <div class="mini"><strong>Convolution</strong><span>필터를 움직이며 가장 중요한 패턴을 찾습니다.</span></div>
+              <div class="mini"><strong>Pooling</strong><span>정보를 요약해서 크기를 줄이고 핵심만 남깁니다.</span></div>
+              <div class="mini"><strong>Flatten</strong><span>2D 특징 맵을 1D 벡터로 바꿔 Dense 층으로 넘깁니다.</span></div>
+              <div class="mini"><strong>Softmax</strong><span>클래스별 확률을 계산해 최종 답을 고릅니다.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="scan-wrap">
+          <div class="scan-title">필터가 이미지를 훑는 느낌</div>
+          <div class="image-grid" id="imageGrid"><div class="filter-box" id="filterBox"></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>CNN 레이어 흐름</div>
+        <p class="desc">레이어에 마우스를 올리면 설명과 데이터 상태가 함께 바뀝니다.</p>
+        <div class="controls">
+          <button class="btn primary" id="cnnPlay">▶ 자동 재생 시작</button>
+          <button class="btn" id="cnnStop">■ 정지</button>
+          <div class="status" id="cnnStatus">현재 모드: 수동 탐색</div>
+        </div>
+        <div class="interactive-grid">
+          <div class="flow-wrap"><div class="stack">
+            <div class="step-block conv active" data-cnn="input"><div class="step-kicker">Step 01</div><div class="step-name">Image Input</div><div class="step-sub">원본 이미지 입력</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block conv" data-cnn="conv"><div class="step-kicker">Step 02</div><div class="step-name">Convolution</div><div class="step-sub">필터가 움직이며 특징 추출</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block relu" data-cnn="relu"><div class="step-kicker">Step 03</div><div class="step-name">ReLU</div><div class="step-sub">중요한 신호 강조</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block pool" data-cnn="pool"><div class="step-kicker">Step 04</div><div class="step-name">Pooling</div><div class="step-sub">핵심 정보만 압축</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block flatten" data-cnn="flatten"><div class="step-kicker">Step 05</div><div class="step-name">Flatten</div><div class="step-sub">2D → 1D</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block dense" data-cnn="dense"><div class="step-kicker">Step 06</div><div class="step-name">Dense Layer</div><div class="step-sub">특징 조합으로 판단</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block softmax" data-cnn="softmax"><div class="step-kicker">Step 07</div><div class="step-name">Softmax Output</div><div class="step-sub">최종 클래스 확률</div></div>
+          </div></div>
+          <aside class="detail-panel">
+            <div class="detail-badge">현재 보고 있는 CNN 단계</div>
+            <h3 id="cnnTitle">Image Input</h3>
+            <p id="cnnBody">모델이 처리할 원본 이미지가 들어오는 단계입니다.</p>
+            <div class="detail-points" id="cnnPoints"></div>
+            <div class="token-panel"><div class="token-title">지금 이 단계에서 데이터가 어떻게 보이는지</div><div class="token-box" id="cnnTokenBox"></div></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-rnn" class="panel">
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>RNN 핵심 흐름</div>
+            <p class="desc">RNN은 순서가 있는 데이터를 한 시점씩 읽으며 이전 hidden state를 다음 시점으로 넘깁니다.</p>
+            <div class="chips">
+              <div class="chip">입력 시퀀스</div>
+              <div class="chip">Embedding</div>
+              <div class="chip">RNN Cell</div>
+              <div class="chip">Hidden State</div>
+              <div class="chip">출력</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title"><span class="dot"></span>타임스텝 감각</div>
+            <div class="mini-grid">
+              <div class="mini"><strong>t=1</strong><span>첫 입력을 읽고 첫 기억 생성</span></div>
+              <div class="mini"><strong>t=2</strong><span>이전 기억 + 현재 입력 결합</span></div>
+              <div class="mini"><strong>t=3</strong><span>더 긴 문맥 반영</span></div>
+              <div class="mini"><strong>핵심</strong><span>기억이 시간축을 따라 전달됨</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>RNN 시간 흐름 따라가기</div>
+        <p class="desc">타임스텝 박스를 아래쪽 흐름과 같이 보면서 복습하면, 어떤 시점의 정보가 이어지는지 더 잘 보입니다.</p>
+        <div class="controls">
+          <button class="btn primary" id="rnnPlay">▶ 자동 재생 시작</button>
+          <button class="btn" id="rnnStop">■ 정지</button>
+          <div class="status" id="rnnStatus">현재 모드: 수동 탐색</div>
+        </div>
+        <div class="interactive-grid">
+          <div class="flow-wrap"><div class="stack">
+            <div class="step-block embed active" data-rnn="seq"><div class="step-kicker">Step 01</div><div class="step-name">Sequence Input</div><div class="step-sub">순서가 있는 데이터 입력</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block embed" data-rnn="embed"><div class="step-kicker">Step 02</div><div class="step-name">Embedding / Vectorization</div><div class="step-sub">각 시점을 벡터화</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block rnn" data-rnn="cell"><div class="step-kicker">Step 03</div><div class="step-name">RNN Cell</div><div class="step-sub">현재 입력 + 이전 hidden state</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block hidden" data-rnn="hidden"><div class="step-kicker">Step 04</div><div class="step-name">Hidden State Update</div><div class="step-sub">다음 시점으로 기억 전달</div></div>
+            <div class="arrow">↓</div>
+            <div class="step-block out" data-rnn="output"><div class="step-kicker">Step 05</div><div class="step-name">Output</div><div class="step-sub">최종 예측 또는 시점별 출력</div></div>
+            <div class="timestep-wrap" id="timestepWrap">
+              <div class="timestep active" id="ts1"><h4>t = 1</h4><p>"나는" 입력. 첫 hidden state 생성</p></div>
+              <div class="timestep" id="ts2"><h4>t = 2</h4><p>"오늘" 입력. 이전 기억과 현재 입력 결합</p></div>
+              <div class="timestep" id="ts3"><h4>t = 3</h4><p>"공부한다" 입력. 문장 흐름이 더 반영된 상태 완성</p></div>
+            </div>
+          </div></div>
+          <aside class="detail-panel">
+            <div class="detail-badge">현재 보고 있는 RNN 단계</div>
+            <h3 id="rnnTitle">Sequence Input</h3>
+            <p id="rnnBody">문장, 시계열, 온도 데이터처럼 순서가 있는 입력이 들어옵니다.</p>
+            <div class="detail-points" id="rnnPoints"></div>
+            <div class="token-panel"><div class="token-title">지금 이 단계에서 시퀀스가 어떻게 보이는지</div><div class="token-box" id="rnnTokenBox"></div></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-lstm" class="panel">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>LSTM / GRU 왜 나왔나</div>
+        <p class="desc">RNN은 긴 시퀀스에서 앞 정보가 약해질 수 있어서, 기억을 더 잘 관리하는 구조인 LSTM과 GRU가 등장했습니다. 이번에는 단순 글이 아니라 <b style="color:#1c2f52;">게이트가 실제로 무엇을 조절하는지</b>가 보이도록 구성했습니다.</p>
+        <div class="mini-grid">
+          <div class="mini"><strong>LSTM</strong><span>forget, input, output gate와 cell state를 따로 둬서 기억을 세밀하게 관리합니다.</span></div>
+          <div class="mini"><strong>GRU</strong><span>update gate와 reset gate로 LSTM보다 단순하게 기억을 조절합니다.</span></div>
+          <div class="mini"><strong>핵심 차이</strong><span>LSTM은 cell state와 hidden state를 나눠 관리하고, GRU는 hidden state 중심으로 더 단순하게 처리합니다.</span></div>
+          <div class="mini"><strong>복습 포인트</strong><span>RNN의 기억 약점을 보완한 게 LSTM, 그걸 더 가볍게 만든 게 GRU입니다.</span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>LSTM 시각화</div>
+            <p class="desc">LSTM은 <span class="kbd">cell state</span>와 <span class="kbd">hidden state</span>를 분리해서 기억을 관리합니다. 아래 흐름만 정확히 이해해도 절반은 끝입니다.</p>
+            <div class="example-flow">
+              <div class="ex-step"><div class="ex-label">Forget Gate</div><div class="ex-value">이전 cell state에서 <b style="color:#1c2f52;">어떤 기억을 버릴지</b> 결정</div></div>
+              <div class="ex-step"><div class="ex-label">Input Gate</div><div class="ex-value">현재 입력에서 <b style="color:#1c2f52;">어떤 새 정보를 저장할지</b> 결정</div></div>
+              <div class="ex-step"><div class="ex-label">Cell State</div><div class="ex-value">장기 기억 통로. 과거 기억과 새 정보를 합쳐 계속 전달</div></div>
+              <div class="ex-step"><div class="ex-label">Output Gate</div><div class="ex-value">현재 시점에 <b style="color:#1c2f52;">무엇을 밖으로 보여줄지</b> 결정</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="scan-wrap" style="margin-top:0;">
+              <div class="scan-title">LSTM 기억 흐름</div>
+              <div style="display:grid;gap:10px;">
+                <div class="step-block hidden" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">INPUTS</div>
+                  <div class="step-name">x_t + h_(t-1) + C_(t-1)</div>
+                  <div class="step-sub">현재 입력, 이전 hidden state, 이전 cell state가 함께 들어옵니다.</div>
+                </div>
+                <div class="step-block relu" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">FORGET GATE</div>
+                  <div class="step-name">버릴 기억 선택</div>
+                  <div class="step-sub">이전 기억 중 지금 필요 없는 부분은 약하게 만듭니다.</div>
+                </div>
+                <div class="step-block conv" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">INPUT GATE</div>
+                  <div class="step-name">새로 저장할 기억 선택</div>
+                  <div class="step-sub">현재 입력에서 중요한 정보만 골라 cell state에 추가합니다.</div>
+                </div>
+                <div class="step-block lstm" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">CELL STATE</div>
+                  <div class="step-name">장기 기억 유지</div>
+                  <div class="step-sub">버릴 것과 새로 넣을 것을 반영한 장기 기억 통로입니다.</div>
+                </div>
+                <div class="step-block dense" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">OUTPUT GATE</div>
+                  <div class="step-name">현재 출력 결정</div>
+                  <div class="step-sub">업데이트된 기억 중에서 지금 밖으로 보여줄 hidden state를 만듭니다.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>GRU 시각화</div>
+            <p class="desc">GRU는 LSTM보다 단순합니다. <span class="kbd">cell state</span>를 따로 두지 않고, hidden state 하나 중심으로 기억을 조절합니다.</p>
+            <div class="example-flow">
+              <div class="ex-step"><div class="ex-label">Update Gate</div><div class="ex-value">이전 기억을 얼마나 유지할지, 새 정보를 얼마나 섞을지 결정</div></div>
+              <div class="ex-step"><div class="ex-label">Reset Gate</div><div class="ex-value">이전 기억을 얼마나 무시하고 새 입력에 집중할지 결정</div></div>
+              <div class="ex-step"><div class="ex-label">Hidden State</div><div class="ex-value">LSTM보다 단순한 구조로 기억을 갱신하며 다음 시점으로 전달</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="scan-wrap" style="margin-top:0;">
+              <div class="scan-title">GRU 기억 흐름</div>
+              <div style="display:grid;gap:10px;">
+                <div class="step-block hidden" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">INPUTS</div>
+                  <div class="step-name">x_t + h_(t-1)</div>
+                  <div class="step-sub">현재 입력과 이전 hidden state가 들어옵니다.</div>
+                </div>
+                <div class="step-block gru" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">RESET GATE</div>
+                  <div class="step-name">이전 기억 얼마나 무시할까</div>
+                  <div class="step-sub">필요 없는 과거 정보는 덜 보게 해서 새 입력 중심으로 계산할 수 있게 합니다.</div>
+                </div>
+                <div class="step-block conv" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">UPDATE GATE</div>
+                  <div class="step-name">이전 기억 얼마나 유지할까</div>
+                  <div class="step-sub">기존 기억을 유지할지, 새 입력을 많이 반영할지 결정합니다.</div>
+                </div>
+                <div class="step-block out" style="margin:0;cursor:default;opacity:1;">
+                  <div class="step-kicker">NEW HIDDEN STATE</div>
+                  <div class="step-name">단일 hidden state 갱신</div>
+                  <div class="step-sub">LSTM보다 단순하게 다음 시점으로 보낼 기억을 완성합니다.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>RNN vs LSTM vs GRU 한눈에</div>
+        <div class="mini-grid">
+          <div class="mini"><strong>RNN</strong><span>구조 단순. 긴 기억 약함</span></div>
+          <div class="mini"><strong>LSTM</strong><span>기억 관리 정교. cell state와 gate가 있어 구조가 복잡</span></div>
+          <div class="mini"><strong>GRU</strong><span>LSTM보다 단순. gate 수가 적고 계산이 비교적 가벼움</span></div>
+          <div class="mini"><strong>복습 포인트</strong><span>RNN의 기억 약점을 보완한 게 LSTM, 이를 더 단순화한 게 GRU</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Review visual for CNN, RNN, LSTM, GRU</div>Review visual for CNN, RNN, LSTM, GRU</div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = {
+      cnn: document.getElementById('panel-cnn'),
+      rnn: document.getElementById('panel-rnn'),
+      lstm: document.getElementById('panel-lstm')
+    };
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        Object.values(panels).forEach(p => p.classList.remove('active'));
+        panels[tab.dataset.tab].classList.add('active');
+      });
+    });
+
+    const imageGrid = document.getElementById('imageGrid');
+    for (let i = 0; i < 36; i++) {
+      const d = document.createElement('div');
+      d.className = 'pixel';
+      if ([2,3,8,9,14,15,20,21,26,27,32,33].includes(i)) d.classList.add('hot');
+      imageGrid.appendChild(d);
+    }
+    const filterBox = document.getElementById('filterBox');
+    const positions = [
+      { left: '0px', top: '0px' },
+      { left: '88px', top: '0px' },
+      { left: '176px', top: '0px' },
+      { left: '0px', top: '88px' },
+      { left: '88px', top: '88px' },
+      { left: '176px', top: '176px' }
+    ];
+    let fp = 0;
+    setInterval(() => {
+      const pos = positions[fp % positions.length];
+      filterBox.style.left = pos.left;
+      filterBox.style.top = pos.top;
+      fp++;
+    }, 900);
+
+    const cnnDetails = {
+      input: { title: 'Image Input', body: '모델이 처리할 원본 이미지가 들어오는 단계입니다.', points: ['입력: 이미지 픽셀 행렬', '예: 28×28 또는 224×224×3', '느낌: 아직은 그냥 원본 사진'], token: ['데이터 상태: 원본 이미지', '현재 표현: 픽셀 값 그대로'] },
+      conv: { title: 'Convolution', body: '작은 필터가 이미지 위를 움직이며 모서리, 선, 패턴 같은 특징을 찾습니다.', points: ['필터(kernel) 사용', '특징 맵 생성', '느낌: 사진에서 중요한 부분만 잡아내기'], token: ['데이터 상태: 특징 맵 생성 시작', '현재 표현: 선, 모서리, 질감 같은 패턴 강조'] },
+      relu: { title: 'ReLU', body: '비선형성을 주는 단계입니다. 음수 값은 0으로 바꾸고, 중요한 신호는 더 선명하게 남깁니다.', points: ['max(0, x)', '불필요한 음수 제거', '느낌: 약한 잡음 걷어내기'], token: ['데이터 상태: 활성화된 특징만 남음', '현재 표현: 중요한 특징이 더 도드라짐'] },
+      pool: { title: 'Pooling', body: '특징 맵 크기를 줄여 계산량을 줄이고, 핵심 특징을 요약해서 남깁니다.', points: ['Max Pooling 많이 사용', '크기 축소', '느낌: 큰 그림만 남기고 압축하기'], token: ['데이터 상태: 더 작은 특징 맵', '현재 표현: 핵심 정보만 압축된 상태'] },
+      flatten: { title: 'Flatten', body: '2차원 특징 맵을 1차원 벡터로 펼쳐서 Dense 층이 처리할 수 있게 만듭니다.', points: ['2D → 1D 변환', 'Dense 층 입력 준비', '느낌: 그림 정보를 긴 벡터 한 줄로 펴기'], token: ['데이터 상태: 1차원 벡터', '현재 표현: 분류기 입력 직전 상태'] },
+      dense: { title: 'Dense Layer', body: 'CNN이 추출한 특징을 바탕으로 어떤 클래스와 가장 가까운지 종합적으로 판단합니다.', points: ['특징 조합 분석', '클래스 판단 준비', '느낌: 최종 추론 단계'], token: ['데이터 상태: 클래스별 점수 계산 중', '현재 표현: 고양이/강아지 같은 후보 비교'] },
+      softmax: { title: 'Softmax Output', body: '각 클래스 확률을 계산해서 최종 예측 결과를 내놓습니다.', points: ['출력: 확률 분포', '가장 높은 확률 선택', '느낌: 최종 답안 제출'], token: ['데이터 상태: 클래스 확률', '현재 표현: 예측 결과 완성'] }
+    };
+    const cnnOrder = ['input','conv','relu','pool','flatten','dense','softmax'];
+    const cnnBlocks = document.querySelectorAll('[data-cnn]');
+    const cnnTitle = document.getElementById('cnnTitle');
+    const cnnBody = document.getElementById('cnnBody');
+    const cnnPoints = document.getElementById('cnnPoints');
+    const cnnTokenBox = document.getElementById('cnnTokenBox');
+    const cnnPlay = document.getElementById('cnnPlay');
+    const cnnStop = document.getElementById('cnnStop');
+    const cnnStatus = document.getElementById('cnnStatus');
+    let cnnTimer = null; let cnnIndex = 0;
+    function setCNN(key) {
+      cnnBlocks.forEach(b => { const active = b.dataset.cnn === key; b.classList.toggle('active', active); b.classList.toggle('dim', !active); });
+      const data = cnnDetails[key]; cnnTitle.textContent = data.title; cnnBody.textContent = data.body;
+      cnnPoints.innerHTML = data.points.map(p => `<div class="point">${p}</div>`).join('');
+      cnnTokenBox.innerHTML = `<div class="token-row"><strong>${data.token[0].split(':')[0]}:</strong> ${data.token[0].split(':').slice(1).join(':').trim()}</div><div class="token-row"><strong>${data.token[1].split(':')[0]}:</strong> ${data.token[1].split(':').slice(1).join(':').trim()}</div>`;
+    }
+    cnnBlocks.forEach(block => { block.addEventListener('mouseenter', () => setCNN(block.dataset.cnn)); block.addEventListener('click', () => setCNN(block.dataset.cnn)); });
+    function startCNN() { clearInterval(cnnTimer); cnnStatus.textContent = '현재 모드: 자동 재생 중'; cnnPlay.textContent = '⏸ 자동 재생 중'; setCNN(cnnOrder[cnnIndex]); cnnTimer = setInterval(() => { cnnIndex = (cnnIndex + 1) % cnnOrder.length; setCNN(cnnOrder[cnnIndex]); }, 1700); }
+    function stopCNN() { clearInterval(cnnTimer); cnnTimer = null; cnnPlay.textContent = '▶ 자동 재생 시작'; cnnStatus.textContent = '현재 모드: 수동 탐색'; }
+    cnnPlay.addEventListener('click', () => cnnTimer ? stopCNN() : startCNN()); cnnStop.addEventListener('click', stopCNN);
+
+    const rnnDetails = {
+      seq: { title: 'Sequence Input', body: '문장, 시계열, 온도 데이터처럼 순서가 있는 입력이 들어옵니다.', points: ['입력: 순서가 있는 데이터', '예: 단어 시퀀스 / 시계열 값', '느낌: 앞뒤 순서가 핵심'], token: ['시퀀스 상태: [나는, 오늘, 공부한다]', '현재 표현: 아직 원본 순서 데이터'] },
+      embed: { title: 'Embedding / Vectorization', body: '각 단어나 시점을 숫자 벡터로 변환합니다.', points: ['텍스트면 임베딩', '입력 표현 준비', '느낌: 순서 데이터를 수치화'], token: ['시퀀스 상태: [x1, x2, x3]', '현재 표현: 각 시점이 벡터로 변환됨'] },
+      cell: { title: 'RNN Cell', body: '현재 입력과 이전 hidden state를 함께 받아 새로운 상태를 계산합니다.', points: ['현재 입력 + 이전 기억 사용', '시간축 따라 반복', '느낌: 지금 정보와 과거 기억 같이 보기'], token: ['시퀀스 상태: t 시점 입력 처리 중', '현재 표현: 현재 입력과 이전 기억 결합 중'] },
+      hidden: { title: 'Hidden State Update', body: '새로운 hidden state가 만들어지고 다음 시점으로 전달됩니다.', points: ['기억 전달', '다음 시점 입력 준비', '느낌: 지금까지 읽은 내용 요약본 업데이트'], token: ['시퀀스 상태: h_t 생성 완료', '현재 표현: 이전보다 더 많은 문맥 반영'] },
+      output: { title: 'Output', body: '각 시점의 출력이나 마지막 hidden state를 사용해 최종 예측을 수행합니다.', points: ['many-to-one / many-to-many 가능', '문장 분류, 예측 등에 사용', '느낌: 순차 처리 결과 최종 사용'], token: ['시퀀스 상태: 최종 출력 준비', '현재 표현: 예측 결과 생성'] }
+    };
+    const rnnOrder = ['seq','embed','cell','hidden','output'];
+    const rnnBlocks = document.querySelectorAll('[data-rnn]');
+    const rnnTitle = document.getElementById('rnnTitle');
+    const rnnBody = document.getElementById('rnnBody');
+    const rnnPoints = document.getElementById('rnnPoints');
+    const rnnTokenBox = document.getElementById('rnnTokenBox');
+    const rnnPlay = document.getElementById('rnnPlay');
+    const rnnStop = document.getElementById('rnnStop');
+    const rnnStatus = document.getElementById('rnnStatus');
+    const tsBoxes = [document.getElementById('ts1'), document.getElementById('ts2'), document.getElementById('ts3')];
+    let rnnTimer = null; let rnnIndex = 0;
+    function setRNN(key) {
+      rnnBlocks.forEach(b => { const active = b.dataset.rnn === key; b.classList.toggle('active', active); b.classList.toggle('dim', !active); });
+      const data = rnnDetails[key]; rnnTitle.textContent = data.title; rnnBody.textContent = data.body;
+      rnnPoints.innerHTML = data.points.map(p => `<div class="point">${p}</div>`).join('');
+      rnnTokenBox.innerHTML = `<div class="token-row"><strong>${data.token[0].split(':')[0]}:</strong> ${data.token[0].split(':').slice(1).join(':').trim()}</div><div class="token-row"><strong>${data.token[1].split(':')[0]}:</strong> ${data.token[1].split(':').slice(1).join(':').trim()}</div>`;
+      tsBoxes.forEach(b => b.classList.remove('active'));
+      if (key === 'seq' || key === 'embed') tsBoxes[0].classList.add('active');
+      else if (key === 'cell' || key === 'hidden') tsBoxes[1].classList.add('active');
+      else tsBoxes[2].classList.add('active');
+    }
+    rnnBlocks.forEach(block => { block.addEventListener('mouseenter', () => setRNN(block.dataset.rnn)); block.addEventListener('click', () => setRNN(block.dataset.rnn)); });
+    function startRNN() { clearInterval(rnnTimer); rnnStatus.textContent = '현재 모드: 자동 재생 중'; rnnPlay.textContent = '⏸ 자동 재생 중'; setRNN(rnnOrder[rnnIndex]); rnnTimer = setInterval(() => { rnnIndex = (rnnIndex + 1) % rnnOrder.length; setRNN(rnnOrder[rnnIndex]); }, 1700); }
+    function stopRNN() { clearInterval(rnnTimer); rnnTimer = null; rnnPlay.textContent = '▶ 자동 재생 시작'; rnnStatus.textContent = '현재 모드: 수동 탐색'; }
+    rnnPlay.addEventListener('click', () => rnnTimer ? stopRNN() : startRNN()); rnnStop.addEventListener('click', stopRNN);
+
+    setCNN('input'); setRNN('seq');
+  </script>
+</body>
+</html>
