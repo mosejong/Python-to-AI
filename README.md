@@ -54,6 +54,16 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드, 복습 내용, 
 
 ---
 
+## 🎨 Interactive Visual Notes
+
+- **[Transformer Interactive Flow](./visual_notes/transformer_interactive_flow.html)**
+  - Transformer의 전체 처리 흐름을 시각적으로 복습할 수 있는 인터랙티브 페이지
+
+- **[CNN/RNN/LSTM/GRU Interactive Flow](./visual_notes/cnn_rnn_lstm_gru_interactive_flow.html)**
+  - CNN과 RNN 계열 모델의 핵심 흐름을 시각적으로 복습할 수 있는 인터랙티브 페이지
+
+---
+
 ## 📚 Learning Log
 
 | Day   | Topic |
@@ -109,6 +119,9 @@ Python-to-AI/
 ├── day21_chatbot/
 ├── day22_nlp_advance/
 ├── day23_attention_nmt/
+├── visual_notes/
+│   ├── transformer_interactive_flow.html
+│   └── cnn_rnn_lstm_gru_interactive_flow.html
 └── README.md
 ```
 
