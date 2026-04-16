@@ -1,6 +1,6 @@
 # Python-to-AI
 
-Python 기초부터 머신러닝, 딥러닝, NLP, 벡터 검색, API/풀스택 프로젝트까지의 학습 과정을 기록한 저장소입니다.  
+Python 기초부터 머신러닝, 딥러닝, NLP, 벡터 검색, API/풀스택, Linux/Docker 실습까지의 학습 과정을 기록한 저장소입니다.  
 AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용, 실습 프로젝트, 시각화 자료를 함께 정리하고 있습니다.
 
 ---
@@ -8,7 +8,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 ## 📌 About
 
 이 저장소는 단순한 코드 모음이 아니라,  
-**Python → ML → DL → NLP → Vector Search → AI 프로젝트**로 이어지는 학습 흐름을 정리한 공간입니다.
+**Python → ML → DL → NLP → Vector Search → Linux/Docker → AI 프로젝트**로 이어지는 학습 흐름을 정리한 공간입니다.
 
 - 직접 작성한 코드 중심
 - 복습 기반 학습 기록
@@ -31,6 +31,8 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 - Streamlit
 - Flask
 - SQLite3
+- Linux / Ubuntu
+- Docker
 - Git / GitHub
 
 ---
@@ -40,6 +42,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 - Python 기반 문제 해결력 강화
 - 머신러닝 / 딥러닝 핵심 개념 정리
 - NLP와 Transformer 구조 이해 및 실습
+- Linux / Docker 기초와 컨테이너 환경 이해
 - 벡터 검색, FastAPI, Flask, 풀스택 프로젝트 경험 확장
 
 ---
@@ -108,6 +111,8 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 | Day25 | Flask / SQLite / 레시피 추천 웹 프로젝트 |
 | Day26 | Transformer 아키텍처 / 사전학습 / 미세조정 / 듀얼 인코더 실습 |
 | Day27 | Linux / Ubuntu / Vim / WSL2 환경 이해 / KoGPT-2 챗봇 페르소나 매핑 |
+| Day28 | 정규표현식 / grep / 리다이렉션 / 파이프 / mount / 프로세스 관리 / crontab / SSH |
+| Day29 | Docker 기초 / 이미지와 컨테이너 / 볼륨 / 환경변수 / Redis / MariaDB / WordPress 실습 |
 
 ---
 
@@ -141,6 +146,8 @@ Python-to-AI/
 ├── day25_FridgeCook/
 ├── day26_transformer/
 ├── day27_linux/
+├── day28_linux_system/
+├── day29_docker/
 ├── visual_notes/
 │   ├── transformer_interactive_flow.html
 │   └── cnn_rnn_lstm_gru_interactive_flow.html
@@ -151,24 +158,44 @@ Python-to-AI/
 
 ## 🔥 Recent Update
 
-### Day27: Linux / Ubuntu 기초 실습과 KoGPT-2 챗봇 페르소나 매핑
+## 🔥 Recent Update
 
-리눅스의 기본 구조와 Ubuntu 환경에서 자주 사용하는 명령어를 학습했습니다.  
-또한 Vim, Nano 같은 텍스트 에디터 사용법과 프로세스 제어(`Ctrl + C`, `Ctrl + Z`, `fg`)를 실습했습니다.  
-마지막으로 KoGPT-2 챗봇에 키워드 매핑을 적용해 '헬피' 페르소나를 반영하는 로직도 구현했습니다.
+### Day28: Linux 기초와 시스템 명령어 학습
+
+정규표현식, `grep`, 리다이렉션, 파이프, 마운트, 프로세스 관리, 작업 예약, SSH까지 리눅스 기본 명령어와 시스템 개념을 학습했습니다.  
+특히 문자열 검색과 명령어 조합 방식, 프로세스와 메모리 구조를 함께 보면서 운영체제의 기본 흐름을 구조적으로 이해하려고 했습니다.
 
 #### 핵심 정리
-- Linux의 커널 / 쉘 구조 이해
-- Ubuntu 환경과 `apt` 기반 패키지 관리 방식 학습
-- `ls`, `cd`, `chmod`, `sudo` 등 기본 명령어 실습
-- `Ctrl + C`, `Ctrl + Z`, `fg`를 통한 프로세스 제어 학습
-- Vim / Nano 사용법 익히기
-- KoGPT-2 챗봇 페르소나 매핑 로직 구현
+- 정규표현식과 `grep`을 활용한 문자열 검색
+- 리다이렉션과 파이프를 통한 명령어 조합
+- `mount` 개념과 파일 시스템 연결 방식 이해
+- `ps`, `kill`, `job`을 통한 프로세스 관리
+- `at`, `crontab`을 이용한 작업 예약
+- `SSH`와 원격 접속 개념 정리
 
 #### Troubleshooting
-- 윈도우와 WSL2 리눅스 환경이 서로 분리된다는 점에서 혼동이 있었음
-- 아나콘다 설치 시 용량과 시간 부담이 커서 더 가벼운 대안 검토가 필요했음
-- 챗봇 응답 매핑을 더 자연스럽게 만들기 위해 키워드/응답 데이터 보강이 필요했음
+- 정규표현식 기호가 비슷해서 처음에 헷갈렸음
+- `ps`, `kill`, `job` 명령어의 사용 상황을 구분하는 연습이 더 필요했음
+- `mount`, `at`, `crontab`은 개념 이해보다 실습 경험이 더 필요하다고 느꼈음
+
+
+### Day29: Docker 기초와 컨테이너 기반 서비스 연결 실습
+
+Docker의 기본 개념인 이미지, 컨테이너, 볼륨, 환경변수, 포트 연결을 학습했습니다.  
+또한 Redis, MariaDB, WordPress 컨테이너를 직접 실행하면서 컨테이너 기반 서비스 구조를 실습했습니다.  
+특히 WordPress와 MariaDB를 연결해 **브라우저 → WordPress → DB** 흐름을 직접 확인했습니다.
+
+#### 핵심 정리
+- Docker image / container 개념 이해
+- `docker run`, `docker ps`, `docker exec` 기본 명령어 실습
+- 볼륨과 마운트를 통한 데이터 영속화 개념 학습
+- 환경변수를 이용한 컨테이너 설정 방식 이해
+- Redis, MariaDB, WordPress 실행 및 연결 실습
+
+#### Troubleshooting
+- Windows cmd 환경에서는 교재의 줄바꿈(`\`) 형식을 그대로 사용할 수 없어 한 줄 명령어로 다시 입력해야 했음
+- 포트 연결과 컨테이너 내부/외부 구조가 처음에는 헷갈렸음
+- DB 연결 구조와 볼륨 개념이 한 번에 들어와 정리하는 데 시간이 필요했음
 
 ---
 
