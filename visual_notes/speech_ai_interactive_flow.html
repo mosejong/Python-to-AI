@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speech AI Interactive Flow</title>
+  <style>
+    :root {
+      --text: #172033;
+      --muted: #5f6f8f;
+      --line: rgba(148,163,184,.22);
+      --panel: rgba(255,255,255,.82);
+      --panel-strong: rgba(255,255,255,.95);
+      --shadow: 0 18px 42px rgba(110,138,184,.14);
+      --blue: #60a5fa;
+      --violet: #8b5cf6;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --yellow: #facc15;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(96,165,250,.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(52,211,153,.10), transparent 26%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5ff 55%, #e9f1ff 100%);
+      min-height: 100vh;
+    }
+    .shell { width: min(1280px, calc(100% - 28px)); margin: 0 auto; padding: 24px 0 42px; }
+    .hero {
+      border-radius: 32px; padding: 34px; border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(240,247,255,.92));
+      box-shadow: var(--shadow);
+      overflow: hidden; position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -70px; bottom: -80px;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(96,165,250,.16), rgba(139,92,246,.06), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.2); background: rgba(96,165,250,.08); color: #3c5f99;
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 4.8rem); line-height: .96; letter-spacing: -.045em; }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6 45%, #10b981);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p { max-width: 930px; color: var(--muted); line-height: 1.85; margin: 0; font-size: 1.02rem; }
+
+    .nav {
+      position: sticky; top: 12px; z-index: 20;
+      display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; margin: 16px 0 20px;
+      border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.78);
+      backdrop-filter: blur(18px); box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+    .nav a, .nav button {
+      text-decoration: none; color: var(--muted); padding: 10px 14px; border-radius: 12px;
+      font-size: 14px; transition: .2s ease; border: 0; background: transparent; cursor: pointer;
+      font-family: inherit;
+    }
+    .nav a:hover, .nav button:hover { background: rgba(96,165,250,.08); color: var(--text); }
+
+    .section {
+      border: 1px solid var(--line); background: var(--panel); backdrop-filter: blur(16px);
+      border-radius: 26px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+      font-size: 1.18rem; font-weight: 700; letter-spacing: -.02em;
+    }
+    .section-title .dot {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      box-shadow: 0 0 18px rgba(96,165,250,.25);
+    }
+    .desc { color: var(--muted); line-height: 1.8; margin-bottom: 18px; }
+
+    .top-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 20px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      padding: 10px 13px; border-radius: 999px; border: 1px solid rgba(96,165,250,.26);
+      background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(167,139,250,.18));
+      color: #18345f; font-size: 13px; font-weight: 800; box-shadow: 0 8px 18px rgba(96,165,250,.12);
+    }
+    .legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .legend-item, .mini, .compare-card {
+      border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.78); padding: 14px;
+    }
+    .legend-item strong, .mini strong, .compare-card strong { display:block; margin-bottom:8px; font-size: 14px; }
+    .legend-item span, .mini span, .compare-card span { color: var(--muted); line-height: 1.7; font-size: 14px; }
+
+    .interactive-grid {
+      display: grid; grid-template-columns: 1.18fr .82fr; gap: 20px; align-items: start;
+    }
+    .flow-wrap {
+      position: relative; padding: 16px; border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(247,250,255,.9));
+      border: 1px solid var(--line); overflow: hidden;
+    }
+    .flow-svg {
+      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+    }
+    .flow-line {
+      fill: none; stroke: rgba(123, 154, 214, 0.16); stroke-width: 3;
+      transition: stroke .2s ease, opacity .2s ease;
+    }
+    .flow-line.active {
+      stroke: url(#flowGradient);
+      opacity: 1;
+      filter: drop-shadow(0 0 8px rgba(96,165,250,.35));
+      stroke-dasharray: 8 8;
+      animation: dashMove 1.3s linear infinite;
+    }
+    @keyframes dashMove { to { stroke-dashoffset: -32; } }
+
+    .step-block {
+      position: relative; z-index: 1;
+      padding: 14px 14px 14px 16px; border-radius: 16px; border: 1px solid transparent;
+      margin-bottom: 10px; cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .step-block:hover, .step-block.active {
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(96,165,250,.22);
+      box-shadow: 0 12px 24px rgba(96,165,250,.10);
+      z-index: 2;
+    }
+    .step-block.dim { opacity: .34; }
+    .step-kicker {
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px;
+      color: rgba(54, 80, 128, .82);
+    }
+    .step-name { font-size: 15px; font-weight: 700; }
+    .step-sub { font-size: 13px; color: rgba(49, 71, 114, .82); margin-top: 6px; line-height: 1.65; }
+
+    .wave { background: rgba(96,165,250,.14); }
+    .fft { background: rgba(167,139,250,.14); }
+    .spec { background: rgba(52,211,153,.14); }
+    .decode { background: rgba(251,146,60,.16); }
+    .stt { background: rgba(244,114,182,.16); }
+    .tts { background: rgba(250,204,21,.16); }
+
+    .detail-panel {
+      position: sticky; top: 88px; border-radius: 24px; border: 1px solid var(--line);
+      background: var(--panel-strong); padding: 22px; min-height: 420px;
+    }
+    .detail-badge {
+      display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.18); color: #41669f; font-size: 12px; margin-bottom: 12px; font-weight: 700;
+    }
+    .detail-panel h3 { margin: 0 0 10px; font-size: 24px; letter-spacing: -.03em; }
+    .detail-panel p { color: var(--muted); line-height: 1.85; font-size: 15px; margin: 0 0 16px; }
+    .detail-points { display: grid; gap: 10px; }
+    .point {
+      padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.78); color: #203150; font-size: 14px; line-height: 1.7;
+    }
+
+    .token-panel {
+      margin-top: 16px; padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.78);
+    }
+    .token-title {
+      font-size: 13px; color: #4d79bd; margin-bottom: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+    }
+    .token-box { display: grid; gap: 10px; }
+    .token-row {
+      padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.92);
+      color: var(--muted); font-size: 14px; line-height: 1.75;
+    }
+    .token-row strong { color: var(--text); }
+
+    .viz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .viz-card {
+      padding: 16px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.82);
+    }
+    .viz-card h4 { margin: 0 0 10px; font-size: 16px; }
+    .caption { color: var(--muted); font-size: 14px; line-height: 1.75; margin-top: 10px; }
+
+    .wave-box {
+      height: 120px; border-radius: 16px; border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(240,247,255,.95));
+      position: relative; overflow: hidden;
+    }
+    .wave-svg { width: 100%; height: 100%; }
+    .wave-path {
+      fill: none; stroke: #60a5fa; stroke-width: 3;
+      stroke-linecap: round;
+      animation: pulseWave 4s ease-in-out infinite;
+    }
+    @keyframes pulseWave {
+      0%,100% { stroke: #60a5fa; }
+      50% { stroke: #8b5cf6; }
+    }
+
+    .bar-wrap { display: flex; align-items: end; gap: 10px; height: 120px; }
+    .bar {
+      flex: 1; border-radius: 12px 12px 4px 4px;
+      background: linear-gradient(180deg, rgba(139,92,246,.78), rgba(96,165,250,.62));
+      animation: fftDance 2.4s ease-in-out infinite;
+    }
+    .bar:nth-child(2) { animation-delay: .15s; }
+    .bar:nth-child(3) { animation-delay: .3s; }
+    .bar:nth-child(4) { animation-delay: .45s; }
+    .bar:nth-child(5) { animation-delay: .6s; }
+    .bar:nth-child(6) { animation-delay: .75s; }
+    @keyframes fftDance {
+      0%,100% { transform: scaleY(.75); }
+      50% { transform: scaleY(1.05); }
+    }
+
+    .spec-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px;
+    }
+    .cell {
+      aspect-ratio: 1 / 1; border-radius: 6px;
+      background: rgba(96,165,250,.1);
+      animation: shimmer 2.2s ease-in-out infinite;
+    }
+    .cell.hot1 { background: rgba(96,165,250,.28); }
+    .cell.hot2 { background: rgba(139,92,246,.34); }
+    .cell.hot3 { background: rgba(251,146,60,.42); }
+    .cell.hot4 { background: rgba(244,114,182,.48); }
+    @keyframes shimmer {
+      0%,100% { opacity: .75; }
+      50% { opacity: 1; }
+    }
+
+    .ctc-flow, .pipeline-row {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .pill {
+      padding: 10px 12px; border-radius: 999px; font-size: 13px; font-weight: 800;
+      border: 1px solid rgba(96,165,250,.22);
+      background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(167,139,250,.12));
+      color: #21447d;
+    }
+    .pill.blank {
+      background: rgba(255,255,255,.92);
+      border-color: rgba(148,163,184,.28);
+      color: #60708d;
+    }
+    .arrow { color: #8aa0c9; font-weight: 800; }
+
+    .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .compare-card h4 { margin: 0 0 8px; font-size: 16px; }
+    .compare-card p { margin: 0; color: var(--muted); line-height: 1.75; font-size: 14px; }
+
+    .footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0 0; }
+
+    @media (max-width: 1024px) {
+      .top-grid, .interactive-grid, .compare-grid { grid-template-columns: 1fr; }
+      .detail-panel { position: static; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(calc(100% - 16px), 1280px); }
+      .hero { padding: 24px; }
+      .section { padding: 18px; }
+      .legend, .viz-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Interactive Study Page · Speech AI</div>
+      <h1><span class="grad">Speech AI</span><br>신호부터 STT / TTS까지</h1>
+      <p>
+        단순 요약 페이지가 아니라, <b>소리의 기본 개념 → FFT / STFT → 스펙트로그램 → CTC → STT / TTS 파이프라인</b>을
+        흐름으로 따라가며 복습할 수 있게 정리했습니다.
+      </p>
+    </section>
+
+    <nav class="nav">
+      <a href="#overview">개요</a>
+      <a href="#signals">시그널</a>
+      <a href="#interactive">핵심 흐름</a>
+      <a href="#ctc">CTC</a>
+      <a href="#compare">모델 비교</a>
+      <button id="focusSpec">STFT 포커스</button>
+    </nav>
+
+    <section id="overview" class="section">
+      <div class="top-grid">
+        <div>
+          <div class="section-title"><span class="dot"></span>이 페이지 핵심</div>
+          <p class="desc">
+            음성 AI는 텍스트만 다루는 문제가 아니라, 시간축을 가진 소리를 해석하고 그것을 다시 문자나 음성으로 바꾸는 과정입니다.
+            그래서 <b style="color:#1c2f52;">신호 처리 + 특징 추출 + 정렬 문제 + 생성 과정</b>이 함께 들어갑니다.
+          </p>
+          <div class="chips">
+            <div class="chip">Waveform</div>
+            <div class="chip">FFT</div>
+            <div class="chip">STFT</div>
+            <div class="chip">Spectrogram</div>
+            <div class="chip">CTC</div>
+            <div class="chip">STT / TTS</div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title"><span class="dot"></span>빠른 용어 정리</div>
+          <div class="legend">
+            <div class="legend-item"><strong>Amplitude</strong><span>파형의 높이. 소리의 세기와 연결됩니다.</span></div>
+            <div class="legend-item"><strong>Frequency</strong><span>1초당 진동 횟수. Hz 단위를 사용합니다.</span></div>
+            <div class="legend-item"><strong>FFT</strong><span>주파수 성분으로 분해하지만 시간 정보는 약합니다.</span></div>
+            <div class="legend-item"><strong>STFT</strong><span>짧은 구간으로 나눠 시간 + 주파수를 같이 봅니다.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="signals" class="section">
+      <div class="section-title"><span class="dot"></span>그림으로 먼저 보기</div>
+      <p class="desc">파형, 주파수, 스펙트로그램이 각각 어떤 느낌인지 직관부터 잡아두면 훨씬 덜 헷갈립니다.</p>
+      <div class="viz-grid">
+        <div class="viz-card">
+          <h4>Waveform 느낌</h4>
+          <div class="wave-box">
+            <svg class="wave-svg" viewBox="0 0 500 120" preserveAspectRatio="none">
+              <path class="wave-path" d="M0,60 C25,25 40,100 65,60 S105,20 130,60 S170,100 195,60 S235,15 260,60 S300,100 325,60 S365,20 390,60 S430,100 455,60 S485,25 500,60" />
+            </svg>
+          </div>
+          <div class="caption">시간축을 따라 소리의 진폭이 어떻게 변하는지 직접 보는 방식.</div>
+        </div>
+        <div class="viz-card">
+          <h4>FFT 느낌</h4>
+          <div class="bar-wrap">
+            <div class="bar" style="height:50%;"></div>
+            <div class="bar" style="height:86%;"></div>
+            <div class="bar" style="height:44%;"></div>
+            <div class="bar" style="height:96%;"></div>
+            <div class="bar" style="height:32%;"></div>
+            <div class="bar" style="height:66%;"></div>
+          </div>
+          <div class="caption">어느 주파수가 강한지 보기 좋지만, 언제 그 주파수가 나왔는지는 약합니다.</div>
+        </div>
+        <div class="viz-card" id="specCard">
+          <h4>STFT / Spectrogram 느낌</h4>
+          <div class="spec-grid">
+            <div class="cell hot1"></div><div class="cell"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell hot2"></div><div class="cell hot3"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell hot4"></div><div class="cell hot3"></div><div class="cell"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell hot2"></div><div class="cell hot4"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell hot1"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell hot4"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell"></div><div class="cell hot4"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div>
+            <div class="cell hot2"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot3"></div><div class="cell"></div><div class="cell hot1"></div><div class="cell hot2"></div><div class="cell"></div><div class="cell hot4"></div>
+          </div>
+          <div class="caption">세로는 주파수, 가로는 시간. 이게 Speech에서 진짜 많이 쓰이는 시각화입니다.</div>
+        </div>
+        <div class="viz-card">
+          <h4>STT / TTS 큰 그림</h4>
+          <div class="pipeline-row">
+            <div class="pill">Audio</div><div class="arrow">→</div>
+            <div class="pill">Feature</div><div class="arrow">→</div>
+            <div class="pill">Model</div><div class="arrow">→</div>
+            <div class="pill">Text</div>
+          </div>
+          <div class="pipeline-row" style="margin-top:10px;">
+            <div class="pill">Text</div><div class="arrow">→</div>
+            <div class="pill">Acoustic</div><div class="arrow">→</div>
+            <div class="pill">Vocoder</div><div class="arrow">→</div>
+            <div class="pill">Speech</div>
+          </div>
+          <div class="caption">위는 STT, 아래는 TTS 흐름입니다. 방향만 반대가 아닙니다. 필요한 처리도 꽤 다릅니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="interactive" class="section">
+      <div class="section-title"><span class="dot"></span>핵심 흐름 따라가기</div>
+      <p class="desc">카드에 마우스를 올리거나 클릭하면 오른쪽 설명, 토큰 상태, 흐름선이 함께 바뀝니다.</p>
+      <div class="interactive-grid">
+        <div class="flow-wrap">
+          <svg class="flow-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60a5fa" />
+                <stop offset="50%" stop-color="#a78bfa" />
+                <stop offset="100%" stop-color="#34d399" />
+              </linearGradient>
+            </defs>
+            <path id="line-1" class="flow-line" d="M24 10 C24 16,24 16,24 22" />
+            <path id="line-2" class="flow-line" d="M24 24 C24 30,24 30,24 36" />
+            <path id="line-3" class="flow-line" d="M24 38 C24 44,24 44,24 50" />
+            <path id="line-4" class="flow-line" d="M24 52 C24 58,24 58,24 64" />
+            <path id="line-5" class="flow-line" d="M24 66 C24 72,24 72,24 78" />
+          </svg>
+
+          <div class="step-block wave active" data-key="wave">
+            <div class="step-kicker">Step 01</div>
+            <div class="step-name">Waveform Input</div>
+            <div class="step-sub">마이크나 오디오 파일에서 시간축 신호를 받는 단계</div>
+          </div>
+
+          <div class="step-block fft" data-key="fft">
+            <div class="step-kicker">Step 02</div>
+            <div class="step-name">Fourier / FFT</div>
+            <div class="step-sub">어떤 주파수 성분이 강한지 보기 좋게 분해</div>
+          </div>
+
+          <div class="step-block spec" data-key="stft">
+            <div class="step-kicker">Step 03</div>
+            <div class="step-name">STFT / Spectrogram</div>
+            <div class="step-sub">짧은 구간으로 나눠 시간 + 주파수를 함께 표현</div>
+          </div>
+
+          <div class="step-block decode" data-key="mel">
+            <div class="step-kicker">Step 04</div>
+            <div class="step-name">Mel / Feature Extraction</div>
+            <div class="step-sub">사람의 청각 특성에 맞춰 특징을 더 압축</div>
+          </div>
+
+          <div class="step-block stt" data-key="stt">
+            <div class="step-kicker">Step 05</div>
+            <div class="step-name">STT Acoustic + Decoding</div>
+            <div class="step-sub">특징을 문자/토큰 확률로 바꾸고 문장으로 정리</div>
+          </div>
+
+          <div class="step-block tts" data-key="tts">
+            <div class="step-kicker">Step 06</div>
+            <div class="step-name">TTS Generation</div>
+            <div class="step-sub">텍스트를 음향 특징과 음성 파형으로 다시 생성</div>
+          </div>
+        </div>
+
+        <aside class="detail-panel">
+          <div class="detail-badge">현재 보고 있는 단계</div>
+          <h3 id="detailTitle">Waveform Input</h3>
+          <p id="detailBody">음성 AI의 시작은 시간축을 가진 원시 음성 신호를 받는 것입니다. 이 단계에서는 아직 글자가 아니라 진동 패턴에 가깝습니다.</p>
+          <div class="detail-points" id="detailPoints"></div>
+
+          <div class="token-panel">
+            <div class="token-title">지금 이 단계에서 데이터가 어떻게 보이는지</div>
+            <div class="token-box" id="tokenBox"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="ctc" class="section">
+      <div class="section-title"><span class="dot"></span>CTC가 왜 필요한가</div>
+      <p class="desc">음성과 글자는 길이도 다르고 경계도 애매합니다. 그래서 blank를 두고 정렬 문제를 조금 덜 빡세게 푸는 아이디어가 중요합니다.</p>
+
+      <div class="viz-grid">
+        <div class="viz-card">
+          <h4>Raw Frame Prediction</h4>
+          <div class="ctc-flow">
+            <div class="pill">ㅇ</div>
+            <div class="pill">ㅇ</div>
+            <div class="pill blank">blank</div>
+            <div class="pill">ㅏ</div>
+            <div class="pill blank">blank</div>
+            <div class="pill">ㄴ</div>
+            <div class="pill">ㄴ</div>
+            <div class="pill">ㅕ</div>
+            <div class="pill">ㅇ</div>
+          </div>
+          <div class="caption">프레임마다 글자를 바로 딱 맞게 주기 어려워서 중복과 blank가 같이 나옵니다.</div>
+        </div>
+        <div class="viz-card">
+          <h4>CTC Collapse</h4>
+          <div class="ctc-flow">
+            <div class="pill">ㅇ</div>
+            <div class="arrow">→</div>
+            <div class="pill">ㅏ</div>
+            <div class="arrow">→</div>
+            <div class="pill">ㄴ</div>
+            <div class="arrow">→</div>
+            <div class="pill">ㅕ</div>
+            <div class="arrow">→</div>
+            <div class="pill">ㅇ</div>
+          </div>
+          <div class="caption">중복을 줄이고 blank를 제거하면 최종 문자열에 가까워집니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare" class="section">
+      <div class="section-title"><span class="dot"></span>모델 비교 포인트</div>
+      <p class="desc">음성인식 모델 이름이 한 번에 많이 나오면 헷갈리기 쉬워서 핵심만 비교했습니다.</p>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4>CTC</h4>
+          <p>정렬 문제를 blank로 완화합니다. 인코더 중심 구조로도 가기 편하고, spike처럼 어느 정도 위치 감각을 볼 수 있습니다.</p>
+        </div>
+        <div class="compare-card">
+          <h4>LAS</h4>
+          <p>Listen, Attend, Spell. Attention을 통해 지금 어떤 입력 구간을 봐야 하는지 학습하며 출력 길이를 유연하게 만듭니다.</p>
+        </div>
+        <div class="compare-card">
+          <h4>RNN-T</h4>
+          <p>음성 step과 텍스트 step을 함께 보며 진행/유지를 판단합니다. 실시간 음성인식 쪽과도 연결되는 구조입니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Python-to-AI · Speech AI Interactive Note</div>
+  </div>
+
+  <script>
+    const data = {
+      wave: {
+        title: "Waveform Input",
+        body: "음성 AI의 시작은 시간축을 가진 원시 음성 신호를 받는 것입니다. 이 단계에서는 아직 글자가 아니라 진동 패턴에 가깝습니다.",
+        points: [
+          "입력은 waveform 형태의 연속 신호",
+          "진폭과 시간축을 먼저 보게 됨",
+          "마이크 입력이나 오디오 파일이 여기 해당"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> 말하는 사람의 실제 음성 파형",
+          "<strong>현재 표현:</strong> 시간에 따라 위아래로 흔들리는 1차원 신호"
+        ],
+        lines: 1
+      },
+      fft: {
+        title: "Fourier / FFT",
+        body: "푸리에 변환은 지금 들어온 신호가 어떤 주파수 성분들로 이루어졌는지 분해해서 보여줍니다. 대신 시간 정보는 약해집니다.",
+        points: [
+          "어느 주파수가 강한지 보기 좋음",
+          "스펙트럼 분석의 시작점",
+          "단점은 언제 그 소리가 나왔는지 약하다는 점"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> waveform",
+          "<strong>현재 표현:</strong> 220Hz, 440Hz 같은 주파수 강도 분포"
+        ],
+        lines: 2
+      },
+      stft: {
+        title: "STFT / Spectrogram",
+        body: "짧은 구간으로 잘라서 푸리에 변환을 반복하면 시간 정보와 주파수 정보를 함께 볼 수 있습니다. 그래서 Speech에서는 STFT가 핵심입니다.",
+        points: [
+          "짧은 window 단위로 분석",
+          "시간축 + 주파수축을 같이 유지",
+          "스펙트로그램으로 시각화 가능"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> 잘린 오디오 프레임들",
+          "<strong>현재 표현:</strong> 시간-주파수 2차원 맵"
+        ],
+        lines: 3
+      },
+      mel: {
+        title: "Mel / Feature Extraction",
+        body: "사람의 청각 특성에 더 맞게 저주파는 촘촘하게, 고주파는 더 넓게 보는 Mel 계열 특징으로 압축하는 단계입니다.",
+        points: [
+          "Mel-Spectrogram이 대표적",
+          "사람이 느끼는 음높이 감각을 일부 반영",
+          "모델 입력용 특징으로 자주 사용"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> Spectrogram",
+          "<strong>현재 표현:</strong> 더 압축되고 학습 친화적인 음성 특징"
+        ],
+        lines: 4
+      },
+      stt: {
+        title: "STT Acoustic + Decoding",
+        body: "특징을 모델에 넣어 문자/토큰 확률로 바꾸고, CTC나 Attention, RNN-T 같은 디코딩 전략으로 문장을 정리하는 단계입니다.",
+        points: [
+          "CNN / BiLSTM / Transformer 계열 사용 가능",
+          "정렬 문제 때문에 디코딩이 중요함",
+          "blank, 중복 토큰 정리 같은 후처리 등장"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> Mel-Spectrogram",
+          "<strong>현재 표현:</strong> 프레임별 문자 확률 → 최종 텍스트"
+        ],
+        lines: 5
+      },
+      tts: {
+        title: "TTS Generation",
+        body: "텍스트를 바로 소리로 바꾸는 게 아니라, 보통 중간 음향 특징을 만들고 마지막에 vocoder로 파형을 생성하는 흐름으로 갑니다.",
+        points: [
+          "텍스트 → 음향 특징 → waveform",
+          "자연스러운 음색과 리듬이 중요",
+          "STT와 반대 방향 같지만 내부 처리도 다름"
+        ],
+        tokens: [
+          "<strong>예시 입력:</strong> 텍스트 문장",
+          "<strong>현재 표현:</strong> 음향 특징을 거쳐 합성된 음성 파형"
+        ],
+        lines: 5
+      }
+    };
+
+    const blocks = document.querySelectorAll(".step-block");
+    const title = document.getElementById("detailTitle");
+    const body = document.getElementById("detailBody");
+    const points = document.getElementById("detailPoints");
+    const tokenBox = document.getElementById("tokenBox");
+    const lines = [
+      document.getElementById("line-1"),
+      document.getElementById("line-2"),
+      document.getElementById("line-3"),
+      document.getElementById("line-4"),
+      document.getElementById("line-5")
+    ];
+
+    function updateStep(key) {
+      const item = data[key];
+      if (!item) return;
+
+      blocks.forEach(block => {
+        const active = block.dataset.key === key;
+        block.classList.toggle("active", active);
+        block.classList.toggle("dim", !active);
+      });
+
+      title.textContent = item.title;
+      body.textContent = item.body;
+      points.innerHTML = item.points.map(p => `<div class="point">${p}</div>`).join("");
+      tokenBox.innerHTML = item.tokens.map(t => `<div class="token-row">${t}</div>`).join("");
+
+      lines.forEach((line, idx) => {
+        line.classList.toggle("active", idx < item.lines);
+      });
+    }
+
+    blocks.forEach(block => {
+      block.addEventListener("mouseenter", () => updateStep(block.dataset.key));
+      block.addEventListener("click", () => updateStep(block.dataset.key));
+    });
+
+    updateStep("wave");
+
+    const focusBtn = document.getElementById("focusSpec");
+    const specCard = document.getElementById("specCard");
+    focusBtn.addEventListener("click", () => {
+      specCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      specCard.animate(
+        [
+          { transform: "scale(1)", boxShadow: "0 0 0 rgba(0,0,0,0)" },
+          { transform: "scale(1.02)", boxShadow: "0 18px 36px rgba(96,165,250,.18)" },
+          { transform: "scale(1)", boxShadow: "0 0 0 rgba(0,0,0,0)" }
+        ],
+        { duration: 900, easing: "ease" }
+      );
+      updateStep("stft");
+    });
+  </script>
+</body>
+</html>

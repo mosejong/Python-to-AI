@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linux Docker Interactive Review Animated</title>
+  <style>
+    :root {
+      --panel: rgba(255,255,255,.84);
+      --panel-strong: rgba(255,255,255,.96);
+      --line: rgba(148,163,184,.22);
+      --text: #172033;
+      --muted: #5f6f8f;
+      --blue: #60a5fa;
+      --violet: #8b5cf6;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --yellow: #facc15;
+      --shadow: 0 18px 42px rgba(110,138,184,.14);
+      --radius: 26px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(96,165,250,.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(52,211,153,.10), transparent 26%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5ff 55%, #e9f1ff 100%);
+      min-height: 100vh;
+    }
+    .shell { width: min(1280px, calc(100% - 28px)); margin: 0 auto; padding: 24px 0 42px; }
+    .hero {
+      border-radius: 32px; padding: 34px; border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(240,247,255,.92));
+      box-shadow: var(--shadow);
+      overflow: hidden; position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(96,165,250,.16), rgba(139,92,246,.06), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.2); background: rgba(96,165,250,.08); color: #3c5f99;
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 4.7rem); line-height: .96; letter-spacing: -.045em; }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6 50%, #10b981);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p { max-width: 920px; color: var(--muted); line-height: 1.85; margin: 0; font-size: 1.02rem; }
+
+    .hero-art {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px;
+    }
+    .hero-card {
+      border-radius: 22px; border: 1px solid var(--line); background: rgba(255,255,255,.72);
+      padding: 16px; backdrop-filter: blur(8px);
+    }
+    .hero-label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #5274a8; margin-bottom: 10px; }
+
+    .tabs {
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 20px; padding: 12px;
+      border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.78);
+      box-shadow: 0 10px 24px rgba(0,0,0,.06); position: sticky; top: 12px; z-index: 20; backdrop-filter: blur(14px);
+    }
+    .tab {
+      padding: 10px 14px; border-radius: 12px; border: 1px solid transparent; background: transparent;
+      color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 700; transition: .2s ease;
+    }
+    .tab:hover { background: rgba(96,165,250,.08); color: var(--text); }
+    .tab.active {
+      color: #18345f; background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(139,92,246,.14));
+      border-color: rgba(96,165,250,.24); box-shadow: 0 8px 18px rgba(96,165,250,.10);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .section {
+      border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius);
+      padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+      font-size: 1.18rem; font-weight: 700; letter-spacing: -.02em;
+    }
+    .section-title .dot {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--violet)); box-shadow: 0 0 18px rgba(96,165,250,.25);
+    }
+    .desc { color: var(--muted); line-height: 1.8; margin-bottom: 18px; }
+
+    .grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 20px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      padding: 10px 13px; border-radius: 999px; border: 1px solid rgba(96,165,250,.26);
+      background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(167,139,250,.18));
+      color: #18345f; font-size: 13px; font-weight: 800; box-shadow: 0 8px 18px rgba(96,165,250,.12);
+    }
+    .mini-grid, .compare-grid, .art-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .mini, .compare-card, .art-card {
+      border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 14px;
+    }
+    .mini strong, .compare-card strong, .art-card strong { display:block; margin-bottom: 8px; font-size: 14px; }
+    .mini span, .compare-card span, .art-card span { color: var(--muted); line-height: 1.7; font-size: 14px; }
+
+    .interactive-grid { display: grid; grid-template-columns: 1.18fr .82fr; gap: 20px; align-items: start; }
+    .flow-wrap {
+      position: relative; padding: 18px; border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(247,250,255,.9));
+      border: 1px solid var(--line); overflow: hidden;
+    }
+    .step-block {
+      position: relative; padding: 14px 14px 14px 16px; border-radius: 16px; border: 1px solid transparent;
+      margin-bottom: 8px; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .step-block:hover, .step-block.active {
+      transform: translateY(-2px) scale(1.01); border-color: rgba(96,165,250,.22);
+      box-shadow: 0 12px 24px rgba(96,165,250,.10); z-index: 2;
+    }
+    .step-block.dim { opacity: .34; }
+    .step-kicker { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; color: rgba(54, 80, 128, .82); }
+    .step-name { font-size: 15px; font-weight: 700; }
+    .step-sub { font-size: 13px; color: rgba(49, 71, 114, .82); margin-top: 6px; line-height: 1.65; }
+
+    .cmd { background: rgba(96,165,250,.14); }
+    .pipe { background: rgba(251,146,60,.14); }
+    .proc { background: rgba(244,114,182,.14); }
+    .net { background: rgba(52,211,153,.14); }
+    .store { background: rgba(139,92,246,.14); }
+    .orchestration { background: rgba(250,204,21,.14); }
+
+    .flow-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .flow-line {
+      fill: none;
+      stroke: rgba(123,154,214,.16);
+      stroke-width: 3;
+      transition: .2s ease;
+    }
+    .flow-line.active {
+      stroke: url(#lineGradient);
+      opacity: 1;
+      filter: drop-shadow(0 0 8px rgba(96,165,250,.35));
+      stroke-dasharray: 8 8;
+      animation: dashMove 1.3s linear infinite;
+    }
+    @keyframes dashMove { to { stroke-dashoffset: -32; } }
+
+    .detail-panel {
+      position: sticky; top: 88px; border-radius: 24px; border: 1px solid var(--line);
+      background: var(--panel-strong); padding: 22px; min-height: 420px;
+    }
+    .detail-badge {
+      display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.18); color: #41669f; font-size: 12px; margin-bottom: 12px; font-weight: 700;
+    }
+    .detail-panel h3 { margin: 0 0 10px; font-size: 24px; letter-spacing: -.03em; }
+    .detail-panel p { color: var(--muted); line-height: 1.85; font-size: 15px; margin: 0 0 16px; }
+    .detail-points { display: grid; gap: 10px; }
+    .point { padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.78); color: #203150; font-size: 14px; line-height: 1.7; }
+
+    .terminal {
+      margin-top: 16px; padding: 16px; border-radius: 18px; border: 1px solid #1f2937;
+      background: #0f172a; color: #dbeafe; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px; line-height: 1.8; white-space: pre-wrap;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .terminal .comment { color: #93c5fd; }
+    .terminal .ok { color: #86efac; }
+    .terminal .warn { color: #fcd34d; }
+
+    .search-row, .docker-row, .k8s-row, .folder-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .pill {
+      padding: 8px 12px; border-radius: 999px; background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.2); color: #20447e; font-size: 13px; font-weight: 700;
+    }
+    .small-arrow { color: #8aa0c9; font-weight: 800; }
+    .process-lanes { display: grid; gap: 8px; }
+    .lane {
+      border-radius: 14px; padding: 10px 12px; border: 1px solid var(--line); background: rgba(255,255,255,.9);
+    }
+    .lane-bar {
+      height: 8px; border-radius: 999px; background: linear-gradient(90deg, rgba(96,165,250,.7), rgba(139,92,246,.65));
+      margin-top: 8px;
+    }
+
+    .box, .folder-box {
+      min-width: 110px; text-align: center; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.92); box-shadow: 0 8px 18px rgba(96,165,250,.06);
+      font-size: 14px; font-weight: 700; color: #24406f;
+    }
+    .box.blue, .folder-box.blue { background: rgba(96,165,250,.12); }
+    .box.green, .folder-box.green { background: rgba(52,211,153,.14); }
+    .box.purple, .folder-box.purple { background: rgba(139,92,246,.14); }
+    .box.orange, .folder-box.orange { background: rgba(251,146,60,.14); }
+
+    .folder-tree-card {
+      display: grid; gap: 14px;
+    }
+    .folder-level {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      padding-left: 0;
+    }
+    .folder-level.indent1 { padding-left: 24px; }
+    .folder-level.indent2 { padding-left: 48px; }
+    .folder-level.indent3 { padding-left: 72px; }
+
+    .network-cloud {
+      display: grid; place-items: center; width: 120px; height: 68px; border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.22); background: linear-gradient(135deg, rgba(96,165,250,.16), rgba(167,139,250,.12));
+      color: #26467b; font-weight: 800;
+    }
+    .caption { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0 0; }
+
+    @media (max-width: 1024px) {
+      .grid, .interactive-grid, .hero-art, .art-grid { grid-template-columns: 1fr; }
+      .detail-panel { position: static; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(calc(100% - 16px), 1280px); }
+      .hero { padding: 24px; }
+      .section { padding: 18px; }
+      .mini-grid, .compare-grid, .art-grid { grid-template-columns: 1fr; }
+      .folder-level.indent1, .folder-level.indent2, .folder-level.indent3 { padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Linux · Docker · Kubernetes Review</div>
+      <h1><span class="grad">리눅스부터 도커까지</span><br>움직이는 흐름으로 복습하기</h1>
+      <p>트랜스포머 정리 파일 느낌으로, 클릭하면 설명이 바뀌고 흐름선도 살아 움직이게 정리했습니다.</p>
+      <div class="hero-art">
+        <div class="hero-card">
+          <div class="hero-label">Linux Flow</div>
+          <div class="search-row">
+            <div class="pill">pwd / ls</div><div class="small-arrow">→</div>
+            <div class="pill">grep</div><div class="small-arrow">→</div>
+            <div class="pill">pipe</div><div class="small-arrow">→</div>
+            <div class="pill">process</div><div class="small-arrow">→</div>
+            <div class="pill">ssh</div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-label">Docker Flow</div>
+          <div class="docker-row">
+            <div class="box purple">Image</div><div class="small-arrow">→</div>
+            <div class="box blue">Container</div><div class="small-arrow">→</div>
+            <div class="box green">Network</div><div class="small-arrow">→</div>
+            <div class="box orange">Kubernetes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="linux">Linux</button>
+      <button class="tab" data-tab="docker">Docker / Kubernetes</button>
+    </div>
+
+    <section id="panel-linux" class="panel active">
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>Linux 핵심 포인트</div>
+            <p class="desc">리눅스는 파일, 프로세스, 표준입출력 흐름을 이해하면 명령어 암기보다 훨씬 편하게 잡힙니다.</p>
+            <div class="chips">
+              <div class="chip">파일 탐색</div>
+              <div class="chip">grep</div>
+              <div class="chip">pipe</div>
+              <div class="chip">redirect</div>
+              <div class="chip">process</div>
+              <div class="chip">ssh</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title"><span class="dot"></span>한 줄 요약</div>
+            <div class="mini-grid">
+              <div class="mini"><strong>파일</strong><span>ls, cd, pwd로 위치와 구조를 파악</span></div>
+              <div class="mini"><strong>검색</strong><span>grep과 정규표현식으로 원하는 문자열 찾기</span></div>
+              <div class="mini"><strong>연결</strong><span>파이프와 리다이렉션으로 명령어를 이어붙이기</span></div>
+              <div class="mini"><strong>관리</strong><span>ps, kill, jobs, crontab으로 시스템 흐름 제어</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Linux 그림으로 한 번 더 보기</div>
+        <p class="desc">텍스트 트리 대신 폴더 박스로 바꿔서 구조가 바로 보이게 정리했습니다.</p>
+        <div class="art-grid">
+          <div class="art-card">
+            <strong>폴더 구조 감각</strong>
+            <div class="folder-tree-card">
+              <div class="folder-level">
+                <div class="folder-box purple">/</div>
+              </div>
+              <div class="folder-level indent1">
+                <div class="folder-box blue">home</div>
+                <div class="folder-box green">etc</div>
+                <div class="folder-box green">var</div>
+              </div>
+              <div class="folder-level indent2">
+                <div class="folder-box blue">mosej</div>
+              </div>
+              <div class="folder-level indent3">
+                <div class="folder-box orange">Python-to-AI</div>
+                <div class="folder-box blue">day27_linux</div>
+                <div class="folder-box blue">day28_linux_system</div>
+              </div>
+            </div>
+            <div class="caption">현재 위치를 보고 이동하는 감각이 먼저 잡혀야 cd, ls, pwd가 편해진다.</div>
+          </div>
+          <div class="art-card">
+            <strong>검색 + 파이프 흐름</strong>
+            <div class="search-row">
+              <div class="pill">cat file.txt</div><div class="small-arrow">→</div>
+              <div class="pill">grep Docker</div><div class="small-arrow">→</div>
+              <div class="pill">결과만 보기</div>
+            </div>
+            <div class="search-row" style="margin-top:10px;">
+              <div class="pill">ps -ef</div><div class="small-arrow">→</div>
+              <div class="pill">grep python</div><div class="small-arrow">→</div>
+              <div class="pill">PID 찾기</div>
+            </div>
+            <div class="caption">리눅스는 결과를 다음 명령으로 넘기는 흐름이 핵심이다.</div>
+          </div>
+          <div class="art-card">
+            <strong>프로세스 감각</strong>
+            <div class="process-lanes">
+              <div class="lane">python app.py<div class="lane-bar" style="width: 88%;"></div></div>
+              <div class="lane">jupyter<div class="lane-bar" style="width: 63%;"></div></div>
+              <div class="lane">ssh<div class="lane-bar" style="width: 38%;"></div></div>
+            </div>
+            <div class="caption">ps / top은 “지금 뭐가 돌아가고 있지?”를 보는 도구라고 생각하면 편하다.</div>
+          </div>
+          <div class="art-card">
+            <strong>원격 접속 느낌</strong>
+            <div class="search-row">
+              <div class="box blue">내 PC</div>
+              <div class="small-arrow">ssh</div>
+              <div class="network-cloud">네트워크</div>
+              <div class="small-arrow">→</div>
+              <div class="box green">원격 서버</div>
+            </div>
+            <div class="caption">SSH는 다른 컴퓨터에 터미널을 열어 들어가는 느낌으로 보면 된다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Linux 명령 흐름 따라가기</div>
+        <p class="desc">카드를 누르면 오른쪽 설명과 예시 터미널이 바뀌고, 흐름선도 함께 움직입니다.</p>
+        <div class="interactive-grid">
+          <div class="flow-wrap">
+            <svg class="flow-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#60a5fa"/>
+                  <stop offset="50%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#34d399"/>
+                </linearGradient>
+              </defs>
+              <path id="linux-line-1" class="flow-line" d="M20 12 C20 18,20 18,20 24"/>
+              <path id="linux-line-2" class="flow-line" d="M20 28 C20 34,20 34,20 40"/>
+              <path id="linux-line-3" class="flow-line" d="M20 44 C20 50,20 50,20 56"/>
+              <path id="linux-line-4" class="flow-line" d="M20 60 C20 66,20 66,20 72"/>
+            </svg>
+            <div class="step-block cmd active" data-group="linux" data-key="navigate" data-line="0">
+              <div class="step-kicker">Step 01</div><div class="step-name">파일과 디렉터리 이동</div><div class="step-sub">현재 위치를 알고 필요한 폴더로 이동</div>
+            </div>
+            <div class="step-block pipe" data-group="linux" data-key="grep" data-line="1">
+              <div class="step-kicker">Step 02</div><div class="step-name">grep과 정규표현식</div><div class="step-sub">원하는 문자열과 패턴 검색</div>
+            </div>
+            <div class="step-block pipe" data-group="linux" data-key="pipe" data-line="2">
+              <div class="step-kicker">Step 03</div><div class="step-name">파이프와 리다이렉션</div><div class="step-sub">명령 결과를 다른 명령어로 넘기기</div>
+            </div>
+            <div class="step-block proc" data-group="linux" data-key="process" data-line="3">
+              <div class="step-kicker">Step 04</div><div class="step-name">프로세스 관리</div><div class="step-sub">실행 중인 작업 확인과 종료</div>
+            </div>
+            <div class="step-block net" data-group="linux" data-key="schedule" data-line="4">
+              <div class="step-kicker">Step 05</div><div class="step-name">작업 예약과 원격 접속</div><div class="step-sub">crontab, at, ssh 흐름 이해</div>
+            </div>
+          </div>
+          <aside class="detail-panel">
+            <div class="detail-badge">현재 Linux 주제</div>
+            <h3 id="linuxTitle">파일과 디렉터리 이동</h3>
+            <p id="linuxBody">리눅스 학습의 시작은 현재 위치와 파일 구조를 정확히 보는 것입니다.</p>
+            <div class="detail-points" id="linuxPoints"></div>
+            <div class="terminal" id="linuxTerminal"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-docker" class="panel">
+      <div class="section">
+        <div class="grid">
+          <div>
+            <div class="section-title"><span class="dot"></span>Docker / K8s 핵심 포인트</div>
+            <p class="desc">도커는 컨테이너를 실행하는 기술이고, 쿠버네티스는 여러 컨테이너를 관리하는 오케스트레이션 플랫폼입니다.</p>
+            <div class="chips">
+              <div class="chip">image</div>
+              <div class="chip">container</div>
+              <div class="chip">volume</div>
+              <div class="chip">network</div>
+              <div class="chip">multi-container</div>
+              <div class="chip">kubernetes</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title"><span class="dot"></span>헷갈리는 포인트</div>
+            <div class="compare-grid">
+              <div class="compare-card"><strong>Image vs Container</strong><span>이미지는 설계도, 컨테이너는 실행 중인 인스턴스</span></div>
+              <div class="compare-card"><strong>Volume vs Bind Mount</strong><span>데이터 영속화 방식과 호스트 연결 방식 구분</span></div>
+              <div class="compare-card"><strong>기본 bridge</strong><span>IP 통신 중심, 이름 기반 통신은 불편</span></div>
+              <div class="compare-card"><strong>사용자 정의 bridge</strong><span>컨테이너 이름으로도 통신 가능</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Docker / Kubernetes 그림으로 보기</div>
+        <p class="desc">글로만 보면 헷갈리는 연결 구조를 그림 느낌으로 먼저 잡아둡니다.</p>
+        <div class="art-grid">
+          <div class="art-card">
+            <strong>Image → Container</strong>
+            <div class="docker-row">
+              <div class="box purple">nginx image</div><div class="small-arrow">run</div>
+              <div class="box blue">web container</div>
+            </div>
+            <div class="caption">이미지는 실행 전 템플릿, 컨테이너는 실제로 동작 중인 상태다.</div>
+          </div>
+          <div class="art-card">
+            <strong>Volume 연결</strong>
+            <div class="docker-row">
+              <div class="box blue">MariaDB</div><div class="small-arrow">↕</div>
+              <div class="box green">volume</div>
+            </div>
+            <div class="caption">컨테이너를 지워도 DB 데이터는 볼륨에 남게 하려는 구조다.</div>
+          </div>
+          <div class="art-card">
+            <strong>사용자 정의 네트워크</strong>
+            <div class="docker-row">
+              <div class="box blue">wordpress</div><div class="small-arrow">↔</div>
+              <div class="network-cloud">app-net</div><div class="small-arrow">↔</div>
+              <div class="box green">mariadb</div>
+            </div>
+            <div class="caption">같은 네트워크에 있으면 이름 기반으로 서로 찾기가 쉬워진다.</div>
+          </div>
+          <div class="art-card">
+            <strong>Kubernetes 감각</strong>
+            <div class="k8s-row">
+              <div class="box orange">Kubernetes</div><div class="small-arrow">관리</div>
+              <div class="box blue">Pod A</div><div class="box blue">Pod B</div><div class="box blue">Pod C</div>
+            </div>
+            <div class="k8s-row" style="margin-top:10px;">
+              <div class="box green">Auto Restart</div><div class="box green">Scaling</div><div class="box green">Rolling Update</div>
+            </div>
+            <div class="caption">도커가 실행이라면, 쿠버네티스는 여러 컨테이너를 계속 굴리는 운영 도구에 가깝다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>컨테이너 흐름 따라가기</div>
+        <p class="desc">실행 순서를 따라가며 보면 Docker와 Kubernetes가 왜 이어지는지 더 잘 보입니다.</p>
+        <div class="interactive-grid">
+          <div class="flow-wrap">
+            <svg class="flow-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#60a5fa"/>
+                  <stop offset="50%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#34d399"/>
+                </linearGradient>
+              </defs>
+              <path id="docker-line-1" class="flow-line" d="M20 10 C20 16,20 16,20 22"/>
+              <path id="docker-line-2" class="flow-line" d="M20 26 C20 32,20 32,20 38"/>
+              <path id="docker-line-3" class="flow-line" d="M20 42 C20 48,20 48,20 54"/>
+              <path id="docker-line-4" class="flow-line" d="M20 58 C20 64,20 64,20 70"/>
+              <path id="docker-line-5" class="flow-line" d="M20 74 C20 80,20 80,20 86"/>
+            </svg>
+            <div class="step-block store active" data-group="docker" data-key="image" data-line="0">
+              <div class="step-kicker">Step 01</div><div class="step-name">Image 준비</div><div class="step-sub">실행에 필요한 환경을 이미지로 확보</div>
+            </div>
+            <div class="step-block cmd" data-group="docker" data-key="container" data-line="1">
+              <div class="step-kicker">Step 02</div><div class="step-name">Container 실행</div><div class="step-sub">이미지를 실제 실행 중인 컨테이너로 만들기</div>
+            </div>
+            <div class="step-block store" data-group="docker" data-key="volume" data-line="2">
+              <div class="step-kicker">Step 03</div><div class="step-name">Volume 연결</div><div class="step-sub">데이터가 지워지지 않도록 외부 저장</div>
+            </div>
+            <div class="step-block net" data-group="docker" data-key="network" data-line="3">
+              <div class="step-kicker">Step 04</div><div class="step-name">Network 연결</div><div class="step-sub">컨테이너끼리 통신할 경로 만들기</div>
+            </div>
+            <div class="step-block orchestration" data-group="docker" data-key="multi" data-line="4">
+              <div class="step-kicker">Step 05</div><div class="step-name">다중 컨테이너 구조</div><div class="step-sub">API / DB 역할 분리와 확장성 확보</div>
+            </div>
+            <div class="step-block orchestration" data-group="docker" data-key="k8s" data-line="5">
+              <div class="step-kicker">Step 06</div><div class="step-name">Kubernetes</div><div class="step-sub">여러 컨테이너를 자동으로 관리</div>
+            </div>
+          </div>
+          <aside class="detail-panel">
+            <div class="detail-badge">현재 Docker 주제</div>
+            <h3 id="dockerTitle">Image 준비</h3>
+            <p id="dockerBody">이미지는 컨테이너 실행에 필요한 파일 시스템과 설정을 담은 설계도입니다.</p>
+            <div class="detail-points" id="dockerPoints"></div>
+            <div class="terminal" id="dockerTerminal"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Python-to-AI · Linux / Docker / Kubernetes Interactive Note</div>
+  </div>
+
+  <script>
+    const linuxData = {
+      navigate: {
+        title: '파일과 디렉터리 이동',
+        body: '리눅스는 지금 내가 어디 있는지, 어떤 파일이 있는지부터 정확히 보는 게 시작입니다.',
+        points: ['pwd로 현재 위치 확인', 'ls -al로 숨김 파일 포함 보기', 'cd로 원하는 폴더 이동'],
+        terminal: '<span class="comment"># 현재 위치 확인</span>\\n$ pwd\\n<span class="ok">/home/mosej/project</span>\\n\\n<span class="comment"># 파일 목록 확인</span>\\n$ ls -al\\n<span class="ok">drwxr-xr-x day27_linux</span>\\n<span class="ok">drwxr-xr-x day28_linux_system</span>'
+      },
+      grep: {
+        title: 'grep과 정규표현식',
+        body: '문자열 검색은 리눅스 실습에서 진짜 자주 쓰이는 기본기입니다.',
+        points: ['grep "error" file.txt 기본 검색', 'grep -n으로 줄 번호 포함', '정규표현식으로 패턴 기반 검색 가능'],
+        terminal: '<span class="comment"># 특정 문자열 찾기</span>\\n$ grep -n "Docker" study_note.txt\\n<span class="ok">12:Docker network는...</span>\\n\\n<span class="comment"># 파이썬 파일에서 import 찾기</span>\\n$ grep -n "^import" app.py'
+      },
+      pipe: {
+        title: '파이프와 리다이렉션',
+        body: '리눅스가 편한 이유는 명령어 하나하나보다 결과를 이어붙이는 흐름에 있습니다.',
+        points: ['| 는 앞 명령 결과를 뒤로 전달', '> 는 파일 덮어쓰기', '>> 는 파일 이어쓰기'],
+        terminal: '<span class="comment"># 검색 결과를 더 보기 좋게 필터링</span>\\n$ ps -ef | grep python\\n\\n<span class="comment"># 결과 저장</span>\\n$ ls -al > file_list.txt\\n$ echo "today done" >> log.txt'
+      },
+      process: {
+        title: '프로세스 관리',
+        body: '실행 중인 프로그램을 보고, 필요하면 종료하고, 백그라운드 작업을 관리하는 흐름입니다.',
+        points: ['ps, top으로 프로세스 확인', 'kill PID로 종료', 'jobs, fg, bg로 작업 제어'],
+        terminal: '<span class="comment"># 파이썬 프로세스 찾기</span>\\n$ ps -ef | grep python\\n<span class="ok">mosej  2341  ... python app.py</span>\\n\\n<span class="comment"># 종료</span>\\n$ kill 2341\\n<span class="warn">signal sent</span>'
+      },
+      schedule: {
+        title: '작업 예약과 원격 접속',
+        body: '자동 실행과 원격 접속은 실무 흐름에 바로 연결되는 리눅스 활용입니다.',
+        points: ['crontab -e로 주기 실행 설정', 'at으로 1회성 작업 예약', 'ssh user@host로 원격 접속'],
+        terminal: '<span class="comment"># crontab 확인</span>\\n$ crontab -l\\n<span class="ok">0 9 * * * /home/mosej/run_review.sh</span>\\n\\n<span class="comment"># 원격 서버 접속</span>\\n$ ssh user@192.168.0.10'
+      }
+    };
+
+    const dockerData = {
+      image: {
+        title: 'Image 준비',
+        body: '이미지는 컨테이너 실행에 필요한 환경을 저장한 템플릿입니다.',
+        points: ['설치된 패키지와 실행 환경 포함', 'docker pull 또는 Dockerfile로 준비', '컨테이너는 이미지를 기반으로 실행'],
+        terminal: '<span class="comment"># 이미지 내려받기</span>\\n$ docker pull nginx\\n<span class="ok">Status: Downloaded newer image for nginx:latest</span>'
+      },
+      container: {
+        title: 'Container 실행',
+        body: '컨테이너는 이미지를 기반으로 실제 동작 중인 프로세스입니다.',
+        points: ['docker run으로 실행', 'docker ps로 상태 확인', 'docker exec -it로 내부 진입'],
+        terminal: '<span class="comment"># nginx 실행</span>\\n$ docker run -d -p 8080:80 --name web nginx\\n\\n<span class="comment"># 실행 중인 컨테이너 보기</span>\\n$ docker ps'
+      },
+      volume: {
+        title: 'Volume 연결',
+        body: '컨테이너를 지워도 데이터는 남기고 싶을 때 볼륨이 필요합니다.',
+        points: ['DB, 업로드 파일 등 영속화', '컨테이너 수명과 데이터 수명 분리', '-v volume:/path 형태 사용'],
+        terminal: '<span class="comment"># 볼륨 연결 예시</span>\\n$ docker run -d -v mysql_data:/var/lib/mysql mysql\\n<span class="ok">데이터는 volume에 저장</span>'
+      },
+      network: {
+        title: 'Network 연결',
+        body: '컨테이너끼리 통신하려면 같은 네트워크에 연결되어야 합니다.',
+        points: ['기본 bridge는 IP 기반 통신 중심', '사용자 정의 bridge는 이름 기반 통신 가능', 'docker network create로 생성'],
+        terminal: '<span class="comment"># 사용자 정의 네트워크 생성</span>\\n$ docker network create app-net\\n\\n<span class="comment"># 같은 네트워크에 컨테이너 실행</span>\\n$ docker run -d --network app-net --name db mariadb'
+      },
+      multi: {
+        title: '다중 컨테이너 구조',
+        body: 'API 서버와 DB 서버를 분리하면 관리, 확장, 협업이 더 쉬워집니다.',
+        points: ['프로세스 수명주기 독립', '서비스별 자원 할당 가능', 'MSA 구조와도 연결 쉬움'],
+        terminal: '<span class="comment"># 예시 흐름</span>\\nBrowser -> WordPress Container -> MariaDB Container\\n\\n<span class="ok">각 역할을 분리하면 장애 대응과 확장이 편해짐</span>'
+      },
+      k8s: {
+        title: 'Kubernetes',
+        body: '쿠버네티스는 여러 컨테이너를 자동 배포, 확장, 복구하는 오케스트레이션 도구입니다.',
+        points: ['도커 위에서 대규모 운영을 쉽게 함', '배포/복구/확장 자동화', '다중 컨테이너 환경의 상위 관리 도구'],
+        terminal: '<span class="comment"># 개념 요약</span>\\nContainer 실행 = Docker\\nContainer 여러 개 관리 = Kubernetes\\n\\n<span class="warn">지금은 역할 개념만 잡아도 충분</span>'
+      }
+    };
+
+    function bindTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      const panels = document.querySelectorAll('.panel');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.getAttribute('data-tab');
+          tabs.forEach(t => t.classList.remove('active'));
+          panels.forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          const panel = document.getElementById(`panel-${target}`);
+          if (panel) panel.classList.add('active');
+        });
+      });
+    }
+
+    function setLineActive(prefix, index) {
+      const lines = document.querySelectorAll(`[id^="${prefix}-line-"]`);
+      lines.forEach((line, i) => {
+        line.classList.toggle('active', i < index);
+      });
+    }
+
+    function bindInteractive(group, data, titleId, bodyId, pointsId, terminalId, linePrefix) {
+      const blocks = document.querySelectorAll(`[data-group="${group}"]`);
+      const title = document.getElementById(titleId);
+      const body = document.getElementById(bodyId);
+      const points = document.getElementById(pointsId);
+      const terminal = document.getElementById(terminalId);
+
+      function update(block) {
+        const key = block.getAttribute('data-key');
+        const item = data[key];
+        if (!item) return;
+
+        blocks.forEach(b => {
+          const active = b === block;
+          b.classList.toggle('active', active);
+          b.classList.toggle('dim', !active);
+        });
+
+        title.textContent = item.title;
+        body.textContent = item.body;
+        points.innerHTML = item.points.map(p => `<div class="point">${p}</div>`).join('');
+        terminal.innerHTML = item.terminal;
+
+        const index = Number(block.getAttribute('data-line') || '0');
+        setLineActive(linePrefix, index);
+      }
+
+      blocks.forEach(block => {
+        block.addEventListener('click', () => update(block));
+        block.addEventListener('mouseenter', () => update(block));
+      });
+
+      if (blocks.length > 0) update(blocks[0]);
+    }
+
+    bindTabs();
+    bindInteractive('linux', linuxData, 'linuxTitle', 'linuxBody', 'linuxPoints', 'linuxTerminal', 'linux');
+    bindInteractive('docker', dockerData, 'dockerTitle', 'dockerBody', 'dockerPoints', 'dockerTerminal', 'docker');
+  </script>
+</body>
+</html>

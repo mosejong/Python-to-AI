@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python-to-AI Study Book</title>
+  <style>
+    :root {
+      --text: #172033;
+      --muted: #5f6f8f;
+      --line: rgba(148,163,184,.22);
+      --shadow: 0 18px 42px rgba(110,138,184,.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(96,165,250,.18), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(139,92,246,.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(52,211,153,.10), transparent 26%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5ff 55%, #e9f1ff 100%);
+      min-height: 100vh;
+    }
+    .shell { width: min(1200px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 46px; }
+    .hero {
+      border-radius: 34px;
+      padding: 36px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(240,247,255,.92));
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.2); background: rgba(96,165,250,.08); color: #3c5f99;
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: .96;
+      letter-spacing: -.045em;
+    }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6 45%, #10b981);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p { max-width: 860px; color: var(--muted); line-height: 1.85; margin: 0; font-size: 1.02rem; }
+    .section {
+      border: 1px solid var(--line); background: rgba(255,255,255,.82); border-radius: 28px;
+      padding: 24px; box-shadow: var(--shadow); margin-bottom: 18px;
+    }
+    .section-title { display:flex; align-items:center; gap:10px; margin-bottom:14px; font-size:1.18rem; font-weight:800; }
+    .dot {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: linear-gradient(135deg, #60a5fa, #8b5cf6);
+      box-shadow: 0 0 18px rgba(96,165,250,.25);
+    }
+    .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .card {
+      display:block; text-decoration:none; color:inherit;
+      border-radius: 22px; border: 1px solid var(--line); background: rgba(255,255,255,.86);
+      padding: 18px; transition: .18s ease; box-shadow: 0 8px 18px rgba(96,165,250,.08);
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 16px 28px rgba(96,165,250,.12); }
+    .badge {
+      display:inline-block; padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;
+      letter-spacing: .04em; margin-bottom: 10px;
+      background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(167,139,250,.16));
+      color: #25457d; border: 1px solid rgba(96,165,250,.2);
+    }
+    .card h3 { margin: 0 0 8px; font-size: 20px; }
+    .card p { margin: 0; color: var(--muted); line-height: 1.75; font-size: 14px; }
+    .hint {
+      margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.72);
+      border: 1px solid var(--line); color: var(--muted); font-size: 14px; line-height: 1.75;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .hero, .section { padding: 18px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Interactive Study Book</div>
+      <h1><span class="grad">Python-to-AI</span><br>복습책 목차</h1>
+      <p>
+        네 교육과정을 day 기록만 남기는 게 아니라, 챕터형 복습책으로 다시 묶는 메인 페이지입니다.
+        앞부분은 기초 요약으로 압축하고, 뒤로 갈수록 시각화 챕터와 프로젝트 챕터로 이어지게 구성했습니다.
+      </p>
+      <div class="hint">
+        같은 폴더 안에 파일만 맞춰두면 카드 클릭으로 바로 이동합니다.
+        예: <code>./python_basics_summary.html</code>, <code>./transformer_interactive_flow.html</code>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><span class="dot"></span>Part 1. Foundation Summary</div>
+      <div class="grid">
+        <a class="card" href="./python_basics_summary.html">
+          <div class="badge">Python Basics</div>
+          <h3>Python 기초 요약</h3>
+          <p>변수, 조건문, 반복문, 함수, 클래스, 파일 처리까지 초반 학습 내용을 압축 정리한 페이지.</p>
+        </a>
+        <a class="card" href="#">
+          <div class="badge">ML Flow</div>
+          <h3>머신러닝 흐름 요약</h3>
+          <p>데이터 수집 → 전처리 → 학습 → 평가 → 예측까지 이어지는 전체 흐름을 나중에 추가할 자리.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><span class="dot"></span>Part 2. Deep Learning Visual Notes</div>
+      <div class="grid">
+        <a class="card" href="./cnn_rnn_lstm_gru_interactive_flow.html">
+          <div class="badge">CNN · RNN</div>
+          <h3>CNN / RNN / LSTM / GRU 복습</h3>
+          <p>이미지 처리와 시퀀스 모델 흐름을 한 파일에서 비교하며 복습하는 페이지.</p>
+        </a>
+        <a class="card" href="./transformer_interactive_flow.html">
+          <div class="badge">Transformer</div>
+          <h3>Transformer 인터랙티브 복습</h3>
+          <p>입력 → 인코더 → 어텐션 → 디코더 → 출력 흐름을 따라가는 시각화 페이지.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><span class="dot"></span>Part 3. System & Infra Notes</div>
+      <div class="grid">
+        <a class="card" href="./linux_docker_interactive_flow_animated.html">
+          <div class="badge">Linux · Docker</div>
+          <h3>Linux / Docker / Kubernetes 복습</h3>
+          <p>리눅스 명령어 흐름부터 컨테이너, 네트워크, 쿠버네티스 개념까지 시각적으로 정리한 페이지.</p>
+        </a>
+        <a class="card" href="./speech_ai_interactive_flow.html">
+          <div class="badge">Speech AI</div>
+          <h3>Speech AI 복습</h3>
+          <p>Waveform, FFT, STFT, Spectrogram, CTC, STT / TTS 파이프라인까지 한 흐름으로 정리한 페이지.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><span class="dot"></span>Part 4. Project Journey</div>
+      <div class="grid">
+        <a class="card" href="#">
+          <div class="badge">Projects</div>
+          <h3>프로젝트 성장 지도</h3>
+          <p>API, 챗봇, NMT, ChromaDB, Flask 프로젝트가 어떤 기술과 연결되는지 보여주는 맵.</p>
+        </a>
+        <a class="card" href="#">
+          <div class="badge">Portfolio</div>
+          <h3>학습 로드맵 / 포트폴리오 요약</h3>
+          <p>Python → ML → DL → NLP → Infra → AI Project 흐름을 최종적으로 정리하는 페이지.</p>
+        </a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
