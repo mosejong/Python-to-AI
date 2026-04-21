@@ -40,7 +40,6 @@
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
     .hero p { max-width: 900px; color: var(--muted); line-height: 1.85; margin: 0; font-size: 1.02rem; }
-
     .book-flow {
       display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:16px;
     }
@@ -50,7 +49,6 @@
       color:#18345f; font-size:13px; font-weight:800; box-shadow:0 8px 18px rgba(96,165,250,.12);
     }
     .arrow { color:#8aa0c9; font-weight:800; }
-
     .section {
       border: 1px solid var(--line); background: rgba(255,255,255,.82); border-radius: 28px;
       padding: 24px; box-shadow: var(--shadow); margin-bottom: 18px;
@@ -76,7 +74,6 @@
     }
     .card h3 { margin: 0 0 8px; font-size: 20px; }
     .card p { margin: 0; color: var(--muted); line-height: 1.75; font-size: 14px; }
-
     @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .hero, .section { padding: 18px; } }
   </style>
 </head>
@@ -85,14 +82,15 @@
     <section class="hero">
       <div class="eyebrow">Interactive Study Book</div>
       <h1><span class="grad">Python-to-AI</span><br>복습책 목차</h1>
-      <p>네 교육과정을 day 기록으로만 남기지 않고, 기초 요약 → 딥러닝 시각화 → 시스템/인프라 → 확장 챕터로 이어지는 복습책 형태로 다시 묶은 메인 페이지입니다.</p>
+      <p>기초 요약 → 딥러닝 시각화 → 시스템/인프라 → 프로젝트 성장 흐름으로 이어지는 복습책 메인 페이지입니다.</p>
       <div class="book-flow">
         <div class="pill">Python 기초</div><div class="arrow">→</div>
         <div class="pill">ML 흐름</div><div class="arrow">→</div>
         <div class="pill">CNN / RNN</div><div class="arrow">→</div>
         <div class="pill">Transformer</div><div class="arrow">→</div>
         <div class="pill">Linux / Docker</div><div class="arrow">→</div>
-        <div class="pill">Speech AI</div>
+        <div class="pill">Speech AI</div><div class="arrow">→</div>
+        <div class="pill">Project Journey</div>
       </div>
     </section>
 
@@ -145,17 +143,17 @@
     </section>
 
     <section class="section">
-      <div class="section-title"><span class="dot"></span>Part 4. Next Chapters</div>
+      <div class="section-title"><span class="dot"></span>Part 4. Project Journey</div>
       <div class="grid">
-        <a class="card" href="#">
+        <a class="card" href="./project_journey_map.html">
           <div class="badge">Projects</div>
           <h3>프로젝트 성장 지도</h3>
-          <p>API, 챗봇, NMT, ChromaDB, Flask 프로젝트가 어떤 기술과 연결되는지 보여주는 맵.</p>
+          <p>배운 기술이 어떤 프로젝트로 이어졌고, 다음 단계가 어디로 확장되는지 보여주는 지도.</p>
         </a>
         <a class="card" href="#">
           <div class="badge">Portfolio</div>
           <h3>학습 로드맵 / 포트폴리오 요약</h3>
-          <p>Python → ML → DL → NLP → Infra → AI Project 흐름을 최종적으로 정리하는 페이지.</p>
+          <p>Python → ML → DL → NLP → Infra → AI Project 흐름을 최종적으로 정리하는 다음 페이지 자리.</p>
         </a>
       </div>
     </section>
