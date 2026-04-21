@@ -45,6 +45,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 - NLP와 Transformer 구조 이해 및 실습
 - Linux / Docker 기초와 컨테이너 환경 이해
 - STT / TTS / 음성 데이터 처리 흐름 이해
+- 음성 명령 기반 데스크톱 어시스턴트 구현 실습
 - 벡터 검색, FastAPI, Flask, 풀스택 프로젝트 경험 확장
 
 ---
@@ -117,6 +118,7 @@ AI Human 교육 과정을 기반으로, 직접 작성한 코드와 복습 내용
 | Day29 | Docker 기초 / 이미지와 컨테이너 / 볼륨 / 환경변수 / Redis / MariaDB / WordPress 실습 |
 | Day30 | Docker 심화 / 다중 컨테이너 / Docker Network / Kubernetes 기초 |
 | Day31 | 음성인식 / 음성합성 / STT / TTS / Fourier Transform / STFT / CTC / RNN-T 기초 |
+| Day32 | Speech AI 실습 / Tacotron2 TTS / Whisper STT / 음성 명령 데스크톱 어시스턴트 / Freesound Audio Tagging 코드 보완 |
 
 ---
 
@@ -154,6 +156,7 @@ Python-to-AI/
 ├── day29_docker/
 ├── day30_docker_kubernetes/
 ├── day31_speech_ai/
+├── day31_speech_ai/
 ├── visual_notes/
 │   ├── index.html
 │   ├── python_basics_summary.html
@@ -169,24 +172,6 @@ Python-to-AI/
 ---
 
 ## 🔥 Recent Update
-
-### Day30: 다중 컨테이너 구조와 Docker Network / Kubernetes 기초
-
-API 서버와 DB 서버를 하나의 컨테이너에 함께 넣기보다, 역할별로 분리된 다중 컨테이너 구조가 왜 더 효율적인지 학습했습니다.  
-또한 Docker Network 개념과 기본 bridge 네트워크, 사용자 정의 bridge 네트워크의 차이를 정리하고, Kubernetes가 여러 컨테이너를 관리하는 오케스트레이션 플랫폼이라는 점을 이해했습니다.
-
-#### 핵심 정리
-- 다중 컨테이너 구조의 필요성 이해
-- API 서버와 DB 서버 분리 운영의 장점 정리
-- Docker Network와 컨테이너 간 통신 개념 학습
-- 기본 bridge 와 사용자 정의 bridge 네트워크 차이 이해
-- `docker cp`, `docker commit`, `docker save/load`, `docker export/import` 명령어 정리
-- Kubernetes의 역할과 컨테이너 오케스트레이션 개념 이해
-
-#### Troubleshooting
-- 기본 bridge 와 사용자 정의 bridge 차이가 처음에는 헷갈렸음
-- 네트워크 드라이버 종류가 한 번에 많아 바로 구분하기 어려웠음
-- `save/load` 와 `export/import` 의 차이를 다시 복습할 필요가 있었음
 
 ### Day31: Speech AI 기초와 STT / TTS 실습
 
@@ -206,6 +191,33 @@ API 서버와 DB 서버를 하나의 컨테이너에 함께 넣기보다, 역할
 - Fourier Transform 과 STFT의 차이를 처음에는 헷갈렸음
 - CTC의 blank, alignment 개념이 직관적으로 바로 들어오지 않았음
 - 음성인식은 텍스트 처리와 달리 시간축과 정렬 문제가 함께 들어가서 더 복합적으로 느껴졌음
+
+### Day32: Speech AI 실습과 음성 명령 데스크톱 어시스턴트 구현
+
+오늘은 Speech AI 기초 개념을 바탕으로 로컬 환경에서 STT / TTS 실습을 직접 진행했습니다.  
+Python 3.13 환경에서는 일부 딥러닝 패키지 호환성 문제가 있어 Python 3.12 기반 아나콘다 환경으로 재구성했고, `torch` import 및 CUDA 인식 여부를 확인하며 실습 환경을 안정화했습니다.
+
+Tacotron2 기반 TTS를 로컬에서 테스트하며 문장별 출력 품질 차이를 확인했고, 반복 발화에서는 attention collapse처럼 보이는 현상과 발음이 뭉개지는 문제도 경험했습니다.  
+Whisper 기반 STT 테스트에서는 이어폰 마이크 입력과 녹음 파일을 활용해 음성 인식 결과를 확인했습니다.
+
+또한 학원 환경에 맞춰 텍스트 명령 기반의 데스크톱 어시스턴트 구조도 함께 구현했습니다.  
+`parse_command` 함수를 통해 다양한 한국어 표현을 하나의 명령으로 해석하도록 구성했고, 메모장 실행, 볼륨 조절, 스크린샷 저장, 미디어 제어 구조까지 연결하며  
+**입력 → 명령 해석 → 시스템 동작 → 음성 출력** 흐름의 핵심 파이프라인을 실습했습니다.
+
+#### 핵심 정리
+- Python 3.12 기반 Speech AI 로컬 실습 환경 구성
+- Tacotron2 기반 TTS 테스트 및 출력 품질 확인
+- Whisper 기반 STT 입력 테스트
+- 다양한 한국어 표현을 처리하는 명령 파서 구조 구현
+- 메모장 실행 / 볼륨 조절 / 스크린샷 저장 / 미디어 제어 연결
+- 음성 AI를 실제 시스템 동작과 연결하는 파이프라인 실습
+- Freesound Audio Tagging 2019 실습 코드 보완 및 호환성 오류 수정
+
+#### Troubleshooting
+- Python 3.13 환경에서 일부 패키지 호환성 문제가 발생했음
+- TTS 출력에서 특정 발음과 반복 문장 품질이 불안정했음
+- 학원 환경상 음성 테스트를 자유롭게 반복하기 어려워 텍스트 명령 방식도 함께 사용했음
+- NumPy 최신 버전에서 발생하는 deprecated 타입 오류를 수정했음
 
 ---
 
