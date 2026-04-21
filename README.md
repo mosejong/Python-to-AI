@@ -155,8 +155,14 @@ Python-to-AI/
 ├── day30_docker_kubernetes/
 ├── day31_speech_ai/
 ├── visual_notes/
+│   ├── index.html
+│   ├── python_basics_summary.html
+│   ├── ml_flow_summary.html
+│   ├── cnn_rnn_lstm_gru_interactive_flow.html
 │   ├── transformer_interactive_flow.html
-│   └── cnn_rnn_lstm_gru_interactive_flow.html
+│   ├── linux_docker_interactive_flow_animated.html
+│   ├── speech_ai_interactive_flow.html
+│   └── project_journey_map.html
 └── README.md
 ```
 
